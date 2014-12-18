@@ -4,82 +4,6 @@ require_once 'cpttaxreceipts.civix.php';
 require_once 'cpttaxreceipts.functions.inc';
 require_once 'cpttaxreceipts.db.inc';
 
-function cpttaxreceipts_civicrm_buildForm( $formName, &$form ) {
-
-  if ( is_a( $form, 'CRM_Contribute_Form_ContributionView' ) ) {
-
-    // add "Issue Tax Receipt" button to the "View Contribution" page
-    // if the Tax Receipt has NOT yet been issued -> display a white maple leaf icon
-    // if the Tax Receipt has already been issued -> display a red maple leaf icon
-
-    CRM_Core_Resources::singleton()->addStyleFile('org.cpt.cpttaxreceipts', 'css/civicrm_cpttaxreceipts.css');
-
-    $contributionId = $form->get( 'id' );
-
-    if ( isset($contributionId) && cpttaxreceipts_eligibleForReceipt($contributionId) ) {
-
-      list($issued_on, $receipt_id) = cpttaxreceipts_issued_on($contributionId);
-      $is_original_receipt = empty($issued_on);
-
-      if ($is_original_receipt) {
-        $buttons = array(array('type'      => 'submit',
-                               'subName'   => 'issue_tax_receipt',
-                               'name'      => ts('Tax Receipt', array('domain' => 'org.cpt.cpttaxreceipts')),
-                               'isDefault' => FALSE ), );
-      }
-      else {
-        // this is essentially the same button - but it has a different
-        // subName -> which is used (css) to display the red maple leaf instead.
-        $buttons = array(array('type'      => 'submit',
-                               'subName'   => 'view_tax_receipt',
-                               'name'      => ts('Tax Receipt', array('domain' => 'org.cpt.cpttaxreceipts')),
-                               'isDefault' => FALSE ), );
-      }
-      $form->addButtons( $buttons );
-
-    }
-  }
-}
-
-/**
- * Implementation of hook_civicrm_postProcess().
- *
- * Called when a form comes back for processing. Basically, we want to process
- * the button we added in cpttaxreceipts_civicrm_buildForm().
- */
-
-function cpttaxreceipts_civicrm_postProcess( $formName, &$form ) {
-
-  // first check whether I really need to process this form
-  if ( ! is_a( $form, 'CRM_Contribute_Form_ContributionView' ) ) {
-    return;
-  }
-  $types = array('issue_tax_receipt','view_tax_receipt');
-  $action = '';
-  foreach($types as $type) {
-    $post = '_qf_ContributionView_submit_'.$type;
-    if (isset($_POST[$post])) {
-      if ($_POST[$post] == ts('Tax Receipt', array('domain' => 'org.cpt.cpttaxreceipts'))) {
-        $action = $post;
-      }
-    }
-  }
-  if (empty($action)) {
-    return;
-  }
-
-  // the tax receipt button has been pressed.  redirect to the tax receipt 'view' screen, preserving context.
-  $contributionId = $form->get( 'id' );
-  $contactId = $form->get( 'cid' );
-
-  $session = CRM_Core_Session::singleton();
-  $session->pushUserContext(CRM_Utils_System::url('civicrm/contact/view/contribution',
-    "reset=1&id=$contributionId&cid=$contactId&action=view&context=contribution&selectedChild=contribute"
-  ));
-
-  $urlParams = array('reset=1', 'id='.$contributionId, 'cid='.$contactId);
-  CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/cpttaxreceipts/view', implode('&',$urlParams)));
-}
 
 /**
  * Implementation of hook_civicrm_searchTasks().
@@ -89,43 +13,17 @@ function cpttaxreceipts_civicrm_postProcess( $formName, &$form ) {
  */
 
 function cpttaxreceipts_civicrm_searchTasks($objectType, &$tasks ) {
-  if ( $objectType == 'contribution' && CRM_Core_Permission::check( 'issue CPT Tax Receipts' ) ) {
-    $single_in_list = FALSE;
-    $aggregate_in_list = FALSE;
-    foreach ($tasks as $key => $task) {
-      if($task['class'] == 'CRM_cpttaxreceipts_Task_IssueSingleTaxReceipts') {
-        $single_in_list = TRUE;
-      }
-    }
-    foreach ($tasks as $key => $task) {
-      if($task['class'] == 'CRM_cpttaxreceipts_Task_IssueAggregateTaxReceipts') {
-        $aggregate_in_list = TRUE;
-      }
-    }
-    if (!$single_in_list) {
-      $tasks[] = array (
-        'title' => ts('Issue Tax Receipts', array('domain' => 'org.cpt.cpttaxreceipts')),
-        'class' => 'CRM_cpttaxreceipts_Task_IssueSingleTaxReceipts',
-        'result' => TRUE);
-    }
-    if (!$aggregate_in_list) {
-      $tasks[] = array (
-        'title' => ts('Issue Aggregate Tax Receipts'),
-        'class' => 'CRM_cpttaxreceipts_Task_IssueAggregateTaxReceipts',
-        'result' => TRUE);
-    }
-  }
-  elseif ( $objectType == 'contact' && CRM_Core_Permission::check( 'issue CPT Tax Receipts' ) ) {
+  if ( $objectType == 'contact' && CRM_Core_Permission::check( 'issue CPT Tax Receipts' ) ) {
     $annual_in_list = FALSE;
     foreach ($tasks as $key => $task) {
-      if($task['class'] == 'CRM_cpttaxreceipts_Task_IssueAnnualTaxReceipts') {
+      if($task['class'] == 'CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts') {
         $annual_in_list = TRUE;
       }
     }
     if (!$annual_in_list) {
       $tasks[] = array (
         'title' => ts('Issue Annual Tax Receipts'),
-        'class' => 'CRM_cpttaxreceipts_Task_IssueAnnualTaxReceipts',
+        'class' => 'CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts',
         'result' => TRUE);
     }
   }
@@ -260,7 +158,7 @@ function cpttaxreceipts_civicrm_navigationMenu(&$params) {
 }
 
 function cpttaxreceipts_civicrm_validate( $formName, &$fields, &$files, &$form ) {
-  if ($formName == 'CRM_cpttaxreceipts_Form_Settings') {
+  if ($formName == 'CRM_CPTTaxReceipts_Form_Settings') {
     $errors = array();
     $allowed = array('gif', 'png', 'jpg', 'pdf');
     foreach ($files as $key => $value) {

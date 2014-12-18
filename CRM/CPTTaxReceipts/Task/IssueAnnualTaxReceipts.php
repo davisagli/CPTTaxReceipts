@@ -4,7 +4,7 @@
  * This class provides the common functionality for issuing Annual Tax Receipts for
  * one or a group of contact ids.
  */
-class CRM_cpttaxreceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Task {
+class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Task {
 
   const MAX_RECEIPT_COUNT = 1000;
 

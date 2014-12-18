@@ -99,7 +99,7 @@ function _cpttaxreceipts_civix_upgrader() {
   if (!file_exists(__DIR__.'/CRM/cpttaxreceipts/Upgrader.php')) {
     return NULL;
   } else {
-    return CRM_cpttaxreceipts_Upgrader_Base::instance();
+    return CRM_CPTTaxReceipts_Upgrader_Base::instance();
   }
 }
 

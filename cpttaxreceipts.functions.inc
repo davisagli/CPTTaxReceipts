@@ -35,13 +35,12 @@ require_once('FPDI/fpdi.php');
 
   const CPTTAX_SETTINGS = 'cpttaxreceipts';
 
+
 /**
  * processTaxReceipt()
  * Accepts an associative array containing receipt variables, and:
  * - generates a PDF file using the provided variables
- * - sends a copy of the receipt to the email archive
  * - emails the receipt to the donor if issue_method='email'
- * - logs the receipt to the audit log
  *
  * This method is common to both single and annual receipts.
  */
@@ -71,6 +70,7 @@ function cpttaxreceipts_processTaxReceipt( $receipt, &$collectedPdf = NULL, $pre
 
   $mailparams = array(
     'from' => $org_name . ' <' . $email_from . '> ',
+    'toEmail' => $email,
     'toName' => $displayname,
     'attachments' => array( $attachment ),
     'subject' => $email_subject,
@@ -82,21 +82,17 @@ function cpttaxreceipts_processTaxReceipt( $receipt, &$collectedPdf = NULL, $pre
   // if method is print, we send to email archive only.
   if ( $receipt['issue_method'] == 'email' ) {
     $mailparams['toEmail'] = $email;
-    $mailparams['bcc'] = $email_archive;
+    if ( $email_archive) {
+      $mailparams['bcc'] = $email_archive;
+    }
   }
-  else {
+  elseif ( $email_archive ) {
     $mailparams['toEmail'] = $email_archive;
   }
 
-  if ( $previewMode ) {
-    $ret = TRUE;
-  }
-  else {
+  $ret = TRUE;
+  if ( !$previewMode && $mailparams['toEmail'] ) {
     $ret = CRM_Utils_Mail::send( $mailparams );
-    if ( $ret == TRUE ) {
-      // we have successfully processed.  Log the receipt.
-      cpttaxreceipts_log($receipt);
-    }
   }
 
   if ( $receipt['issue_method'] == 'email' ) {
@@ -182,7 +178,6 @@ function cpttaxreceipts_generateFormattedReceipt( $receipt, &$collectedPdf = NUL
     "preview_mode" => $previewMode,
     "mymargin_left" => $mymargin_left,
     "mymargin_top" => $mymargin_top,
-    "is_duplicate" => $receipt['is_duplicate'],
     "pdf_img_files_path" => $pdf_img_files_path,
     "line_1" => $line_1,
     "source_funds" => isset($receipt['source']) ? $receipt['source'] : '',
@@ -209,22 +204,9 @@ function cpttaxreceipts_generateFormattedReceipt( $receipt, &$collectedPdf = NUL
   foreach ( $output_files as $f ) {
     $f->AddPage();
 
-    if ($receipt['is_duplicate']) {
-      // print duplicate copy
-      cpttaxreceipts_createPDF($f, $pdf_variables);
-    }
-    elseif (! $receipt['is_duplicate']) {
-      // print original AND duplicate copy
-      $pdf_variables["mymargin_top"] = $mymargin_top;
-      $pdf_variables["is_duplicate"] = FALSE;
-      cpttaxreceipts_createPDF($f, $pdf_variables);
-      $pdf_variables["mymargin_top"] = $mymargin_top + 90;
-      $pdf_variables["is_duplicate"] = TRUE;
-      cpttaxreceipts_createPDF($f, $pdf_variables);
-      $pdf_variables["mymargin_top"] = $mymargin_top + 90*2;
-      $pdf_variables["is_duplicate"] = TRUE;
-      cpttaxreceipts_createPDF($f, $pdf_variables);
-    }
+    // print original AND duplicate copy
+    $pdf_variables["mymargin_top"] = $mymargin_top;
+    cpttaxreceipts_createPDF($f, $pdf_variables);
   }
 
   // close and output the single receipt, but not the collected receipts...
@@ -240,7 +222,6 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
   $preview_mode = $pdf_variables["preview_mode"];
   $mymargin_left = $pdf_variables["mymargin_left"];
   $mymargin_top = $pdf_variables["mymargin_top"];
-  $is_duplicate = $pdf_variables["is_duplicate"];
   $pdf_img_files_path = $pdf_variables["pdf_img_files_path"];
   $line_1 = $pdf_variables["line_1"];
   $source_funds = $pdf_variables["source_funds"];
@@ -261,9 +242,6 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
   // Middle center section
   if ( $preview_mode ) {
     $pdf->Image($pdf_img_files_path . 'preview_mode.png', $mymargin_left + 65, $mymargin_top, '', 45);
-  }
-  else if ( $is_duplicate ) {
-    $pdf->Image($pdf_img_files_path . 'duplicate_trans.png', $mymargin_left + 65, $mymargin_top, '', 45);
   }
   // Top left section
   $pdf_template_file = CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'receipt_pdftemplate');
@@ -441,200 +419,11 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
   $pdf->Line($mymargin_left, $mymargin_top + 85, 198, $mymargin_top + 85, 'dash');
 }
 
-/**************************************
- * SECTION: Utility Functions
- */
-
-/**
- * set up the custom field structure for In-Kind tax receipts
- */
-
-function cpttaxreceipts_configure_inkind_fields() {
-
-  // check if the In-kind contribtion type exists.  if not, create it.
-  $dao = _cpttaxreceipts_get_contribution_dao();
-  $dao->name = 'In-kind';
-
-  if ( ! $dao->find(true) ) {
-    $dao->name = 'In-kind';
-    $dao->is_deductible = TRUE;
-    $dao->is_active = TRUE;
-    $dao->save();
-  }
-
-  $contrib_type_id = $dao->id;
-
-  // check if the custom group exists.  if not, create it.
-  $params = array(
-    'title' => 'In-kind donation fields',
-    'version' => 3,
-  );
-
-  require_once 'api/api.php';
-  $result = civicrm_api( 'custom_group', 'get', $params );
-
-  if ( $result['count'] == 0 ) {
-    $group = array(
-      'title' => 'In-kind donation fields',
-      'extends' => array( 'Contribution' ),
-      'extends_entity_column_value' => array( $contrib_type_id ),
-      'collapse_display' => 0,
-      'style' => 'Inline',
-      'is_active' => 1,
-      'version' => 3
-    );
-    $result =& civicrm_api('custom_group', 'create', $group);
-  }
-  foreach ( $result['values'] as $id => $detail ) {
-    $custom_group_id = $id;
-  }
-
-  // check if the custom fields exist.  if not, create them.
-  foreach ( array( 'Description of property', 'Appraised by', 'Address of Appraiser', 'Original cost' ) as $field ) {
-    $params = array(
-      'custom_group_id' => $custom_group_id,
-      'label' => $field,
-      'version' => 3,
-    );
-    $result = civicrm_api( 'custom_field', 'get', $params);
-
-    if ( $result['count'] == 0 ) {
-      $field_params = array(
-        'custom_group_id' => $custom_group_id,
-        'label' => $field,
-        'data_type' => 'String',
-        'is_required' => 1,
-        'is_active' => 1,
-        'version' => 3,
-      );
-      if ( $field == 'Original cost' ) {
-        $field_params['is_required'] = 0;
-        $field_params['help_post'] = 'Amount originally paid for the item. This item is needed for a special rule'.
-          ' that applies if either something was purchased in the last ten years'.
-          ' with the intent of making a donation, or if an item is donated within three years'.
-          ' of being purchased. In both cases the amount that can be claimed is the lesser'.
-          ' of the market value, and the amount paid for the item. This item is used to show'.
-          ' the cost of the item donated (and the creditable amount) if either of those '.
-          ' situations apply.';
-      }
-      $result =& civicrm_api('custom_field', 'create', $field_params);
-    }
-  }
-}
 
 /**************************************
  * SECTION: Tax Receipt API
  */
 
-/**
- * issueTaxReceipt()
- * Issues a tax receipt for a single contribution.
- * Detects if the receipt is a duplicate and reacts appropriately.
- */
-function cpttaxreceipts_issueTaxReceipt( $contribution, &$collectedPdf = NULL, $previewMode = FALSE ) {
-
-  // This function basically needs to set up a $receipt[] array and pass it to
-  // processTaxReceipt() which does the hard work
-
-  // check if a Tax Receipt has already been issued previously for this Contribution
-  // user input could be tainted! we want this method to check everything for validity...
-  list($issued_on, $receipt_id) = cpttaxreceipts_issued_on($contribution->id);
-
-  // When returning issued_on field:
-  //   returns false for non existing $contribution ID
-  //   returns 0 for existing but old data
-  //   returns timestamp for new data
-  $is_duplicate = empty($issued_on) ? 0 : 1;
-
-  if ( $is_duplicate ) {
-    // if this was issued as part of an annual receipt, then jump over to the Annual method
-    $receipt = cpttaxreceipts_load_receipt($receipt_id);
-    if ( $receipt['issue_type'] == 'annual' ) {
-      $contactId = $receipt['contact_id'];
-      $year = substr($receipt['contributions'][0]['receive_date'], 0, 4);
-      return cpttaxreceipts_issueAnnualTaxReceipt($contactId, $year, $collectedPdf, $previewMode);
-    }
-    else if ( $receipt['issue_type'] == 'aggregate' ) {
-      $contactId = $receipt['contact_id'];
-      $year = substr($receipt['contributions'][0]['receive_date'], 0, 4);
-      list($method, $email) = cpttaxreceipts_sendMethodForContact($contactId);
-      return cpttaxreceipts_issueAggregateTaxReceipt($contactId, $year, $receipt['contributions'],
-        $method, $collectedPdf, $previewMode);
-    }
-  }
-
-  // determine the send method
-  list( $method, $email ) = cpttaxreceipts_sendMethodForContact($contribution->contact_id);
-
-  // generate a receipt number
-  $receipt_no = CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'receipt_prefix') . str_pad($contribution->id, 8, 0, STR_PAD_LEFT);
-
-  // process In-Kind variables if this is a receipt for an in-kind contribution
-
-  $contributiontype =  _cpttaxreceipts_get_type_for_contribution($contribution);
-
-  $inkind_values = array();
-  // check if this is an 'In-kind" contribution.
-  if ( $contributiontype->name == 'In-kind' ) {
-    // in this case get the custom field values:
-    require_once 'CRM/Core/BAO/CustomField.php';
-    $groupTitle = 'In-kind donation fields';
-    $fieldLabel_description = 'Description of property';
-    $customFieldID_description = CRM_Core_BAO_CustomField::getCustomFieldID( $fieldLabel_description, $groupTitle );
-    $fieldLabel_appraisedby = 'Appraised by';
-    $customFieldID_appraisedby = CRM_Core_BAO_CustomField::getCustomFieldID( $fieldLabel_appraisedby, $groupTitle );
-    $fieldLabel_appraiseraddress = 'Address of Appraiser';
-    $customFieldID_appraiseraddress = CRM_Core_BAO_CustomField::getCustomFieldID( $fieldLabel_appraiseraddress, $groupTitle );
-    $fieldLabel_cost = 'Original cost';
-    $customFieldID_cost = CRM_Core_BAO_CustomField::getCustomFieldID( $fieldLabel_cost, $groupTitle );
-
-    require_once 'CRM/Core/BAO/CustomValueTable.php';
-
-    $custom_id = 'custom_' . $customFieldID_description;
-    $params = array('entityID' => $contribution->id, $custom_id => 1);
-    $values = CRM_Core_BAO_CustomValueTable::getValues($params);
-    $inkind_values[] = $values[$custom_id];
-
-    $custom_id = 'custom_' . $customFieldID_appraisedby;
-    $params = array('entityID' => $contribution->id, $custom_id => 1);
-    $values = CRM_Core_BAO_CustomValueTable::getValues($params);
-    $inkind_values[] = $values[$custom_id];
-
-    $custom_id = 'custom_' . $customFieldID_appraiseraddress;
-    $params = array('entityID' => $contribution->id, $custom_id => 1);
-    $values = CRM_Core_BAO_CustomValueTable::getValues($params);
-    $inkind_values[] = $values[$custom_id];
-
-    $custom_id = 'custom_' . $customFieldID_cost;
-    $params = array('entityID' => $contribution->id, $custom_id => 1);
-    $values = CRM_Core_BAO_CustomValueTable::getValues($params);
-    $inkind_values[] = $values[$custom_id];
-  }
-
-  $receipt = array(
-    'receipt_no' => $receipt_no,
-    'issued_on' =>  (int) $_SERVER['REQUEST_TIME'],
-    'contact_id' => $contribution->contact_id,
-    'receipt_amount' => cpttaxreceipts_eligibleAmount($contribution->id),
-    'is_duplicate' => $is_duplicate,
-    'issue_type' => 'single',
-    'issue_method' => $method,
-    'receive_date' => $contribution->receive_date,
-    'source' => $contribution->source,
-    'inkind_values' => $inkind_values,
-  );
-
-  $receipt['contributions'] = array(
-    array(
-      'contribution_id' => $contribution->id,
-      'contribution_amount' => $contribution->total_amount,
-      'receipt_amount' => $receipt['receipt_amount'],
-      'receive_date' => $contribution->receive_date,
-    )
-  );
-
-  return cpttaxreceipts_processTaxReceipt($receipt, $collectedPdf, $previewMode);
-}
 
 function cpttaxreceipts_eligibleForReceipt( $contributionId ) {
   require_once('CRM/Contribute/DAO/Contribution.php');
@@ -717,152 +506,38 @@ function cpttaxreceipts_issueAnnualTaxReceipt( $contactId, $year, &$collectedPdf
   // determine the send method
   list( $method, $email ) = cpttaxreceipts_sendMethodForContact($contactId);
 
-  // query for duplicate receipt
-  list( $issued_on, $receipt_id ) = cpttaxreceipts_annual_issued_on($contactId, $year);
+  $contributions = cpttaxreceipts_contributions_not_receipted($contactId, $year);
 
-  // When returning issued_on field:
-  //   returns false for non existing $contribution ID
-  //   returns 0 for existing but old data
-  //   returns timestamp for new data
-  $is_duplicate = empty($issued_on) ? 0 : 1;
-
-  if ( $is_duplicate ) {
-    // issue an identical receipt
-    $receipt = cpttaxreceipts_load_receipt($receipt_id);
-    $receipt['issued_on'] = (int) $_SERVER['REQUEST_TIME'];
-    $receipt['is_duplicate'] = 1;
-    $receipt['receive_date'] = $year;
-    $receipt['issue_method'] = $method;
-  }
-  else {
-
-    $contributions = cpttaxreceipts_contributions_not_receipted($contactId, $year);
-
-    if ( count($contributions) == 0 ) {
-      return array(FALSE, $method, NULL);
-    }
-
-    // calculate total amount
-    $receiptContributions = array();
-    $totalReceipt = 0;
-    foreach ( $contributions as $c ) {
-      $receiptContributions[] = array(
-        'contribution_id' => $c['contribution_id'],
-        'contribution_amount' => $c['total_amount'],
-        'receipt_amount' => cpttaxreceipts_eligibleAmount($c['contribution_id']),
-        'receive_date' => $c['receive_date'],
-      );
-      $totalReceipt += cpttaxreceipts_eligibleAmount($c['contribution_id']);
-    }
-
-    // generate a receipt number
-    $receiptNo = CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'receipt_prefix') . str_pad($receiptContributions[0]['contribution_id'], 8, 0, STR_PAD_LEFT);
-
-    $receipt = array(
-      'receipt_no' => $receiptNo,
-      'issued_on' =>  (int) $_SERVER['REQUEST_TIME'],
-      'contact_id' => $contactId,
-      'receipt_amount' => $totalReceipt,
-      'is_duplicate' => 0,
-      'issue_type' => 'annual',
-      'issue_method' => $method,
-      'receive_date' => $year,
-      'contributions' => $receiptContributions,
-    );
-
-  }
-
-  return cpttaxreceipts_processTaxReceipt($receipt, $collectedPdf, $previewMode);
-}
-
-/**
- * cpttaxreceipts_issueAggregateTaxReceipt()
- * Issues an grouped tax receipt for a given contact, year and list of selected contributions.
- * Currently does not issue duplicates. Pass only original contribution ids.
- *
- * @param $contactId
- * @param $year
- * @param $contributions
- * @param $method
- * @param null $collectedPdf
- * @param bool $previewMode
- * @return array
- */
-function cpttaxreceipts_issueAggregateTaxReceipt($contactId, $year, $contributions, $method, &$collectedPdf = NULL,
-                                                 $previewMode = FALSE ) {
   if ( count($contributions) == 0 ) {
     return array(FALSE, $method, NULL);
   }
 
-  /* Two different formats come into this function in the $contributions array
-   * 1. When issuing for the first time:
-   * array ($contribution_id => array(
-   *   'contribution_id' => $id,
-   *   'contact_id' => $dao->contact_id,
-   *   'total_amount' => $dao->total_amount,
-   *   'non_deductible_amount' => $dao->non_deductible_amount,
-   *   'receive_date' => $dao->receive_date,
-   *   'receive_year' => $dao->receive_year,
-   *   'eligible' => $eligible,
-   *   'receipt_id' => $dao->receipt_id,
-   * ),);
-   * 2. When re-issuing:
-   *
-   *  $index (not contrib id) => array(
-   *    'contribution_id'
-   *    'contribution_amount'
-   *    'receipt_amount'
-   *    'receive_date'
-   * );
-   * */
-
-  $contrib_copy = $contributions;
-  $check_contribution = array_shift($contrib_copy);
-  list($issued_on, $receipt_id) = cpttaxreceipts_issued_on($check_contribution['contribution_id']);
-
-  if (isset($check_contribution['receipt_id']) && $check_contribution['receipt_id'] != 0) {
-    $is_duplicate = TRUE;
-  }
-  else {
-    $is_duplicate = empty($issued_on) ? 0 : 1;
-  }
-
-  if ( $is_duplicate ) {
-    $receipt = cpttaxreceipts_load_receipt($receipt_id);
-    $receipt['issued_on'] = (int) $_SERVER['REQUEST_TIME'];
-    $receipt['is_duplicate'] = 1;
-    $receipt['issue_method'] = $method;
-    $receipt['receive_date'] = $year;
-  }
-  else {
-    // calculate total amount
-    $receiptContributions = array();
-    $totalReceipt = 0;
-    foreach ( $contributions as $c ) {
-      $receiptContributions[] = array(
-        'contribution_id' => $c['contribution_id'],
-        'contribution_amount' => $c['total_amount'],
-        'receipt_amount' => cpttaxreceipts_eligibleAmount($c['contribution_id']),
-        'receive_date' => $c['receive_date'],
-      );
-      $totalReceipt += cpttaxreceipts_eligibleAmount($c['contribution_id']);
-    }
-
-    // generate a receipt number
-    $receiptNo = CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'receipt_prefix') . str_pad($receiptContributions[0]['contribution_id'], 8, 0, STR_PAD_LEFT);
-
-    $receipt = array(
-      'receipt_no' => $receiptNo,
-      'issued_on' =>  (int) $_SERVER['REQUEST_TIME'],
-      'contact_id' => $contactId,
-      'receipt_amount' => $totalReceipt,
-      'is_duplicate' => 0,
-      'issue_type' => 'aggregate',
-      'issue_method' => $method,
-      'receive_date' => $year,
-      'contributions' => $receiptContributions,
+  // calculate total amount
+  $receiptContributions = array();
+  $totalReceipt = 0;
+  foreach ( $contributions as $c ) {
+    $receiptContributions[] = array(
+      'contribution_id' => $c['contribution_id'],
+      'contribution_amount' => $c['total_amount'],
+      'receipt_amount' => cpttaxreceipts_eligibleAmount($c['contribution_id']),
+      'receive_date' => $c['receive_date'],
     );
+    $totalReceipt += cpttaxreceipts_eligibleAmount($c['contribution_id']);
   }
+
+  // generate a receipt number
+  $receiptNo = CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'receipt_prefix') . str_pad($receiptContributions[0]['contribution_id'], 8, 0, STR_PAD_LEFT);
+
+  $receipt = array(
+    'receipt_no' => $receiptNo,
+    'issued_on' =>  (int) $_SERVER['REQUEST_TIME'],
+    'contact_id' => $contactId,
+    'receipt_amount' => $totalReceipt,
+    'issue_type' => 'annual',
+    'issue_method' => $method,
+    'receive_date' => $year,
+    'contributions' => $receiptContributions,
+  );
 
   return cpttaxreceipts_processTaxReceipt($receipt, $collectedPdf, $previewMode);
 }
@@ -908,17 +583,6 @@ function cpttaxreceipts_sendMethodForContact( $contactId ) {
 
 }
 
-function cpttaxreceipts_sendMethodForContribution( $contributionId ) {
-
-  $contribution =  new CRM_Contribute_DAO_Contribution();
-  $contribution->id = $contributionId;
-
-  if ( ! $contribution->find( TRUE ) ) {
-    CRM_Core_Error::fatal( "cpttaxreceipts: Could not retrieve details for this contribution" );
-  }
-
-  return cpttaxreceipts_sendMethodForContact( $contribution->contact_id );
-}
 
 function cpttaxreceipts_openCollectedPDF() {
 
@@ -964,43 +628,23 @@ function cpttaxreceipts_sendCollectedPDF(&$pdf, $filename) {
  */
 function _cpttaxreceipts_get_type_for_contribution($contribution) {
   // Require once lines are only needed if the civicrm.settings.php does not have the autoloader line
-  require_once 'CRM/Utils/VersionCheck.php';
-  $version_checker = CRM_Utils_VersionCheck::singleton();
-  $majorVersion = floatval(substr($version_checker->localVersion, 0, 3));
-  if ($majorVersion >= 4.3) {
-    require_once 'CRM/Financial/DAO/FinancialType.php';
-    $contributionType = new CRM_Financial_DAO_FinancialType();
-    $contributionType->id = $contribution->financial_type_id;
-    if ( ! $contributionType->find( TRUE ) ) {
-      CRM_Core_Error::fatal( "cpttaxreceipts: Could not find corresponding contribution type." );
-    }
-  }
-  else { // Assume 4.2 or lower
-    require_once 'CRM/Contribute/DAO/ContributionType.php';
-    $contributionType = new CRM_Contribute_DAO_ContributionType();
-    $contributionType->id = $contribution->contribution_type_id;
-    if ( ! $contributionType->find( TRUE ) ) {
-      CRM_Core_Error::fatal( "cpttaxreceipts: Could not find corresponding contribution type." );
-    }
+  require_once 'CRM/Financial/DAO/FinancialType.php';
+  $contributionType = new CRM_Financial_DAO_FinancialType();
+  $contributionType->id = $contribution->financial_type_id;
+  if ( ! $contributionType->find( TRUE ) ) {
+    CRM_Core_Error::fatal( "cpttaxreceipts: Could not find corresponding contribution type." );
   }
   return $contributionType;
 }
 
+
 function _cpttaxreceipts_get_contribution_dao() {
   // Require once lines are only needed if the civicrm.settings.php does not have the autoloader line
-  require_once 'CRM/Utils/VersionCheck.php';
-  $version_checker = CRM_Utils_VersionCheck::singleton();
-  $majorVersion = floatval(substr($version_checker->localVersion, 0, 3));
-  if ($majorVersion >= 4.3) {
-    require_once 'CRM/Financial/DAO/FinancialType.php';
-    $contributionType = new CRM_Financial_DAO_FinancialType();
-  }
-  else { // Assume 4.2 or lower
-    require_once 'CRM/Contribute/DAO/ContributionType.php';
-    $contributionType = new CRM_Contribute_DAO_ContributionType();
-  }
+  require_once 'CRM/Financial/DAO/FinancialType.php';
+  $contributionType = new CRM_Financial_DAO_FinancialType();
   return $contributionType;
 }
+
 
 /**
  * Get the correct contact address. Get the billing address followed by the is_primary as a fallback.
@@ -1043,21 +687,4 @@ function cpttaxreceipts_getAddress($contact_id) {
   CRM_Core_BAO_Address::fixAddress($address);
 
   return $address;
-}
-
-/**
- * @param $issue_type
- * @return string display formatted Issue type
- */
-function _cpttaxreceipts_get_display_type($issue_type) {
-  switch ($issue_type) {
-    case 'aggregate' :
-      return 'Aggregate';
-    case 'annual' :
-      return 'Annual';
-    case 'single' :
-      return 'Single';
-    default:
-      return '';
-  }
 }

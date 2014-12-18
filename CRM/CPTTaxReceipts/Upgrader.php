@@ -3,7 +3,7 @@
 /**
  * Collection of upgrade steps
  */
-class CRM_cpttaxreceipts_Upgrader extends CRM_cpttaxreceipts_Upgrader_Base {
+class CRM_CPTTaxReceipts_Upgrader extends CRM_CPTTaxReceipts_Upgrader_Base {
 
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).
@@ -12,14 +12,14 @@ class CRM_cpttaxreceipts_Upgrader extends CRM_cpttaxreceipts_Upgrader_Base {
    * Run the fresh install script when the module is installed
    */
   public function install() {
-    $this->executeSqlFile('sql/install.sql');
+
   }
 
   /**
    * Run the uninstall script when the module is uninstalled
    */
   public function uninstall() {
-    $this->executeSqlFile('sql/uninstall.sql');
+
   }
 
   /**

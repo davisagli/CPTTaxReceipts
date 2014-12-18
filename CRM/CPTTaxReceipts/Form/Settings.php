@@ -7,7 +7,7 @@ require_once 'CRM/Core/Form.php';
  *
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC43/QuickForm+Reference
  */
-class CRM_cpttaxreceipts_Form_Settings extends CRM_Core_Form {
+class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
 
   CONST SETTINGS = 'cpttaxreceipts';
 
@@ -201,7 +201,6 @@ class CRM_cpttaxreceipts_Form_Settings extends CRM_Core_Form {
 
       $this->addRule('email_subject', 'Enter email subject', 'required');
       $this->addRule('email_from', 'Enter email from address', 'required');
-      $this->addRule('email_archive', 'Enter email archive address', 'required');
       $this->addRule('email_message', 'Enter email message', 'required');
     }
     else if ( $mode == 'defaults' ) {
