@@ -7,13 +7,13 @@ require_once 'CRM/Core/Form.php';
  *
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC43/QuickForm+Reference
  */
-class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
+class CRM_cpttaxreceipts_Form_Settings extends CRM_Core_Form {
 
-  CONST SETTINGS = 'CDNTaxReceipts';
+  CONST SETTINGS = 'cpttaxreceipts';
 
   function buildQuickForm() {
 
-    CRM_Utils_System::setTitle(ts('Configure CDN Tax Receipts', array('domain' => 'org.civicrm.cdntaxreceipts')));
+    CRM_Utils_System::setTitle(ts('Configure CPT Tax Receipts', array('domain' => 'org.cpt.cpttaxreceipts')));
 
     $this->processOrgOptions('build');
     $this->processReceiptOptions('build');
@@ -30,7 +30,7 @@ class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
     $this->addButtons(array(
       array(
         'type' => 'submit',
-        'name' => ts('Submit', array('domain' => 'org.civicrm.cdntaxreceipts')),
+        'name' => ts('Submit', array('domain' => 'org.cpt.cpttaxreceipts')),
         'isDefault' => TRUE,
       ),
     ));
@@ -50,14 +50,14 @@ class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
 
   function processOrgOptions($mode) {
     if ( $mode == 'build' ) {
-      $this->add('text', 'org_name', ts('Organization Name', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'org_address_line1', ts('Address Line 1', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'org_address_line2', ts('Address Line 2', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'org_tel', ts('Telephone', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'org_fax', ts('Fax', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'org_email', ts('Email', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'org_web', ts('Website', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'org_charitable_no', ts('Charitable Registration Number', array('domain' => 'org.civicrm.cdntaxreceipts')));
+      $this->add('text', 'org_name', ts('Organization Name', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'org_address_line1', ts('Address Line 1', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'org_address_line2', ts('Address Line 2', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'org_tel', ts('Telephone', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'org_fax', ts('Fax', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'org_email', ts('Email', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'org_web', ts('Website', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'org_charitable_no', ts('Charitable Registration Number', array('domain' => 'org.cpt.cpttaxreceipts')));
 
       $this->addRule('org_name', 'Enter Organization Name', 'required');
       $this->addRule('org_address_line1', 'Enter Address Line 1', 'required');
@@ -100,8 +100,8 @@ class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
 
   function processReceiptOptions($mode) {
     if ( $mode == 'build' ) {
-      $this->add('text', 'receipt_prefix', ts('Receipt Prefix', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'receipt_authorized_signature_text', ts('Authorized Signature Text', array('domain' => 'org.civicrm.cdntaxreceipts')));
+      $this->add('text', 'receipt_prefix', ts('Receipt Prefix', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'receipt_authorized_signature_text', ts('Authorized Signature Text', array('domain' => 'org.cpt.cpttaxreceipts')));
 
       $config = CRM_Core_Config::singleton( );
       if ($config->maxImportFileSize >= 8388608 ) {
@@ -114,21 +114,21 @@ class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
       $this->assign('uploadSize', $uploadSize );
       $this->setMaxFileSize( $uploadFileSize );
 
-      $this->addElement('file', 'receipt_logo', ts('Organization Logo', array('domain' => 'org.civicrm.cdntaxreceipts')), 'size=30 maxlength=60');
+      $this->addElement('file', 'receipt_logo', ts('Organization Logo', array('domain' => 'org.cpt.cpttaxreceipts')), 'size=30 maxlength=60');
       $this->addUploadElement('receipt_logo');
-      $this->addRule( 'receipt_logo', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.civicrm.cdntaxreceipts') );
+      $this->addRule( 'receipt_logo', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.cpt.cpttaxreceipts') );
 
-      $this->addElement('file', 'receipt_signature', ts('Signature Image', array('domain' => 'org.civicrm.cdntaxreceipts')), 'size=30 maxlength=60');
+      $this->addElement('file', 'receipt_signature', ts('Signature Image', array('domain' => 'org.cpt.cpttaxreceipts')), 'size=30 maxlength=60');
       $this->addUploadElement('receipt_signature');
-      $this->addRule( 'receipt_signature', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.civicrm.cdntaxreceipts') );
+      $this->addRule( 'receipt_signature', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.cpt.cpttaxreceipts') );
 
-      $this->addElement('file', 'receipt_watermark', ts('Watermark Image', array('domain' => 'org.civicrm.cdntaxreceipts')), 'size=30 maxlength=60');
+      $this->addElement('file', 'receipt_watermark', ts('Watermark Image', array('domain' => 'org.cpt.cpttaxreceipts')), 'size=30 maxlength=60');
       $this->addUploadElement('receipt_watermark');
-      $this->addRule( 'receipt_watermark', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.civicrm.cdntaxreceipts') );
+      $this->addRule( 'receipt_watermark', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.cpt.cpttaxreceipts') );
 
-      $this->addElement('file', 'receipt_pdftemplate', ts('PDF Template', array('domain' => 'org.civicrm.cdntaxreceipts')), 'size=30 maxlength=60');
+      $this->addElement('file', 'receipt_pdftemplate', ts('PDF Template', array('domain' => 'org.cpt.cpttaxreceipts')), 'size=30 maxlength=60');
       $this->addUploadElement('receipt_pdftemplate');
-      $this->addRule( 'receipt_pdftemplate', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.civicrm.cdntaxreceipts') );
+      $this->addRule( 'receipt_pdftemplate', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.cpt.cpttaxreceipts') );
     }
     else if ( $mode == 'defaults' ) {
       $defaults = array(
@@ -165,12 +165,12 @@ class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
 
   function processSystemOptions($mode) {
     if ( $mode == 'build' ) {
-      $this->addElement('checkbox', 'issue_inkind', ts('Setup in-kind receipts?', array('domain' => 'org.civicrm.cdntaxreceipts')));
+      $this->addElement('checkbox', 'issue_inkind', ts('Setup in-kind receipts?', array('domain' => 'org.cpt.cpttaxreceipts')));
 
       $yesno_options = array();
       $yesno_options[] = $this->createElement('radio', NULL, NULL, 'Yes', 1);
       $yesno_options[] = $this->createElement('radio', NULL, NULL, 'No', 0);
-      $this->addGroup($yesno_options, 'enable_email', ts('Send receipts by email?', array('domain' => 'org.civicrm.cdntaxreceipts')));
+      $this->addGroup($yesno_options, 'enable_email', ts('Send receipts by email?', array('domain' => 'org.cpt.cpttaxreceipts')));
       $this->addRule('enable_email', 'Enable or disable email receipts', 'required');
     }
     else if ( $mode == 'defaults' ) {
@@ -186,7 +186,7 @@ class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
 
       if (isset($values['issue_inkind']) == TRUE) {
         if ( $values['issue_inkind'] == 1 ) {
-          cdntaxreceipts_configure_inkind_fields();
+          cpttaxreceipts_configure_inkind_fields();
         }
       }
     }
@@ -194,10 +194,10 @@ class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
 
   function processEmailOptions($mode) {
     if ( $mode == 'build' ) {
-      $this->add('text', 'email_subject', ts('Email Subject', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'email_from', ts('Email From', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->add('text', 'email_archive', ts('Archive Email', array('domain' => 'org.civicrm.cdntaxreceipts')));
-      $this->addElement('textarea', 'email_message', ts('Email Message', array('domain' => 'org.civicrm.cdntaxreceipts')));
+      $this->add('text', 'email_subject', ts('Email Subject', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'email_from', ts('Email From', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->add('text', 'email_archive', ts('Archive Email', array('domain' => 'org.cpt.cpttaxreceipts')));
+      $this->addElement('textarea', 'email_message', ts('Email Message', array('domain' => 'org.cpt.cpttaxreceipts')));
 
       $this->addRule('email_subject', 'Enter email subject', 'required');
       $this->addRule('email_from', 'Enter email from address', 'required');
@@ -205,8 +205,8 @@ class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
       $this->addRule('email_message', 'Enter email message', 'required');
     }
     else if ( $mode == 'defaults' ) {
-      $subject = ts('Your Tax Receipt', array('domain' => 'org.civicrm.cdntaxreceipts'));
-      $message = ts('Attached please find your official tax receipt for income tax purposes.', array('domain' => 'org.civicrm.cdntaxreceipts'));
+      $subject = ts('Your Tax Receipt', array('domain' => 'org.cpt.cpttaxreceipts'));
+      $message = ts('Attached please find your official tax receipt for income tax purposes.', array('domain' => 'org.cpt.cpttaxreceipts'));
       $defaults = array(
         'email_subject' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'email_subject', NULL, $subject),
         'email_from' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'email_from'),
@@ -231,7 +231,7 @@ class CRM_Cdntaxreceipts_Form_Settings extends CRM_Core_Form {
     $this->processSystemOptions('post');
     $this->processEmailOptions('post');
 
-    $statusMsg = ts('Your settings have been saved.', array('domain' => 'org.civicrm.cdntaxreceipts'));
+    $statusMsg = ts('Your settings have been saved.', array('domain' => 'org.cpt.cpttaxreceipts'));
     CRM_Core_Session::setStatus( $statusMsg, '', 'success' );
   }
 }

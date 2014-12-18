@@ -4,7 +4,7 @@
  * This class provides the common functionality for issuing Aggregate Tax Receipts for
  * a group of Contribution ids.
  */
-class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_Form_Task {
+class CRM_cpttaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_Form_Task {
 
   const MAX_RECEIPT_COUNT = 1000;
 
@@ -22,8 +22,8 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
   function preProcess() {
 
     //check for permission to edit contributions
-    if ( ! CRM_Core_Permission::check('issue cdn tax receipts') ) {
-      CRM_Core_Error::fatal(ts('You do not have permission to access this page', array('domain' => 'org.civicrm.cdntaxreceipts')));
+    if ( ! CRM_Core_Permission::check('issue CPT Tax Receipts') ) {
+      CRM_Core_Error::fatal(ts('You do not have permission to access this page', array('domain' => 'org.cpt.cpttaxreceipts')));
     }
 
     parent::preProcess();
@@ -43,7 +43,7 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
       ),
     );
 
-    $this->_contributions_status = cdntaxreceipts_contributions_get_status($this->_contributionIds);
+    $this->_contributions_status = cpttaxreceipts_contributions_get_status($this->_contributionIds);
 
     // Get the number of years selected
     foreach ($this->_contributions_status as $contrib_status) {
@@ -73,11 +73,11 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
         $year = $status['receive_year'];
         $issue_type = empty($status['receipt_id']) ? 'original' : 'duplicate';
         $receipts[$issue_type][$year]['total_contrib']++;
-        // Note: non-deductible amount has already had hook called in cdntaxreceipts_contributions_get_status
+        // Note: non-deductible amount has already had hook called in cpttaxreceipts_contributions_get_status
         $receipts[$issue_type][$year]['total_amount'] += ($status['total_amount']);
         $receipts[$issue_type][$year]['not_eligible_amount'] += $status['non_deductible_amount'];
         if ($status['eligible']) {
-          list( $method, $email ) = cdntaxreceipts_sendMethodForContact($status['contact_id']);
+          list( $method, $email ) = cpttaxreceipts_sendMethodForContact($status['contact_id']);
           $receipts[$issue_type][$year][$method]['contribution_count']++;
           if (!isset($receipts[$issue_type][$year]['contact_ids'][$status['contact_id']])) {
             $receipts[$issue_type][$year]['contact_ids'][$status['contact_id']] = array(
@@ -124,9 +124,9 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
    */
   function buildQuickForm() {
 
-    CRM_Utils_System::setTitle(ts('Issue Aggregate Tax Receipts', array('domain' => 'org.civicrm.cdntaxreceipts')));
+    CRM_Utils_System::setTitle(ts('Issue Aggregate Tax Receipts', array('domain' => 'org.cpt.cpttaxreceipts')));
 
-    CRM_Core_Resources::singleton()->addStyleFile('org.civicrm.cdntaxreceipts', 'css/civicrm_cdntaxreceipts.css');
+    CRM_Core_Resources::singleton()->addStyleFile('org.cpt.cpttaxreceipts', 'css/civicrm_cpttaxreceipts.css');
 
     $this->assign('receiptList', $this->_receipts);
     $this->assign('receiptYears', $this->_years);
@@ -136,20 +136,20 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
     foreach ( $this->_years as $year ) {
       $this->addElement('radio', 'receipt_year', NULL, $year, 'issue_' . $year);
     }
-    $this->addRule('receipt_year', ts('Selection required', array('domain' => 'org.civicrm.cdntaxreceipts')), 'required');
+    $this->addRule('receipt_year', ts('Selection required', array('domain' => 'org.cpt.cpttaxreceipts')), 'required');
 
-    $this->add('checkbox', 'is_preview', ts('Run in preview mode?', array('domain' => 'org.civicrm.cdntaxreceipts')));
+    $this->add('checkbox', 'is_preview', ts('Run in preview mode?', array('domain' => 'org.cpt.cpttaxreceipts')));
 
     $buttons = array(
       array(
         'type' => 'cancel',
-        'name' => ts('Back', array('domain' => 'org.civicrm.cdntaxreceipts')),
+        'name' => ts('Back', array('domain' => 'org.cpt.cpttaxreceipts')),
       ),
       array(
         'type' => 'next',
         'name' => 'Issue Tax Receipts',
         'isDefault' => TRUE,
-        'js' => array('onclick' => "return submitOnce(this,'{$this->_name}','" . ts('Processing', array('domain' => 'org.civicrm.cdntaxreceipts')) . "');"),
+        'js' => array('onclick' => "return submitOnce(this,'{$this->_name}','" . ts('Processing', array('domain' => 'org.cpt.cpttaxreceipts')) . "');"),
       ),
     );
     $this->addButtons($buttons);
@@ -193,7 +193,7 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
     }
 
     // start a PDF to collect receipts that cannot be emailed
-    $receiptsForPrintingPDF = cdntaxreceipts_openCollectedPDF();
+    $receiptsForPrintingPDF = cpttaxreceipts_openCollectedPDF();
 
     $emailCount = 0;
     $printCount = 0;
@@ -203,7 +203,7 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
     foreach ($this->_receipts['original'][$year]['contact_ids'] as $contact_id => $contribution_status) {
       if ( $emailCount + $printCount + $failCount >= self::MAX_RECEIPT_COUNT ) {
         $status = ts('Maximum of %1 tax receipt(s) were sent. Please repeat to continue processing.',
-          array(1=>self::MAX_RECEIPT_COUNT, 'domain' => 'org.civicrm.cdntaxreceipts'));
+          array(1=>self::MAX_RECEIPT_COUNT, 'domain' => 'org.cpt.cpttaxreceipts'));
         CRM_Core_Session::setStatus($status, '', 'info');
         break;
       }
@@ -212,7 +212,7 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
       $method = $contribution_status['issue_method'];
 
       if ( empty($issuedOn) && count($contributions) > 0 ) {
-        $ret = cdntaxreceipts_issueAggregateTaxReceipt($contact_id, $year, $contributions, $method,
+        $ret = cpttaxreceipts_issueAggregateTaxReceipt($contact_id, $year, $contributions, $method,
           $receiptsForPrintingPDF, $previewMode);
 
         if ( $ret == 0 ) {
@@ -229,18 +229,18 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
 
     // 3. Set session status
     if ( $previewMode ) {
-      $status = ts('%1 tax receipt(s) have been previewed.  No receipts have been issued.', array(1=>$printCount, 'domain' => 'org.civicrm.cdntaxreceipts'));
+      $status = ts('%1 tax receipt(s) have been previewed.  No receipts have been issued.', array(1=>$printCount, 'domain' => 'org.cpt.cpttaxreceipts'));
       CRM_Core_Session::setStatus($status, '', 'success');
     }
     else {
-      $status = ts('%1 tax receipt(s) were sent by email.', array(1=>$emailCount, 'domain' => 'org.civicrm.cdntaxreceipts'));
+      $status = ts('%1 tax receipt(s) were sent by email.', array(1=>$emailCount, 'domain' => 'org.cpt.cpttaxreceipts'));
       CRM_Core_Session::setStatus($status, '', 'success');
-      $status = ts('%1 tax receipt(s) need to be printed.', array(1=>$printCount, 'domain' => 'org.civicrm.cdntaxreceipts'));
+      $status = ts('%1 tax receipt(s) need to be printed.', array(1=>$printCount, 'domain' => 'org.cpt.cpttaxreceipts'));
       CRM_Core_Session::setStatus($status, '', 'success');
     }
 
     if ( $failCount > 0 ) {
-      $status = ts('%1 tax receipt(s) failed to process.', array(1=>$failCount, 'domain' => 'org.civicrm.cdntaxreceipts'));
+      $status = ts('%1 tax receipt(s) failed to process.', array(1=>$failCount, 'domain' => 'org.cpt.cpttaxreceipts'));
       CRM_Core_Session::setStatus($status, '', 'error');
     }
 
@@ -250,7 +250,7 @@ class CRM_Cdntaxreceipts_Task_IssueAggregateTaxReceipts extends CRM_Contribute_F
 
     // 4. send the collected PDF for download
     // NB: This exits if a file is sent.
-    cdntaxreceipts_sendCollectedPDF($receiptsForPrintingPDF, 'Receipts-To-Print-' . (int) $_SERVER['REQUEST_TIME'] . '.pdf');  // EXITS.
+    cpttaxreceipts_sendCollectedPDF($receiptsForPrintingPDF, 'Receipts-To-Print-' . (int) $_SERVER['REQUEST_TIME'] . '.pdf');  // EXITS.
   }
 }
 

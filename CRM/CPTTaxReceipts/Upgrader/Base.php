@@ -5,7 +5,7 @@
 /**
  * Base class which provides helpers to execute upgrade logic
  */
-class CRM_Cdntaxreceipts_Upgrader_Base {
+class CRM_cpttaxreceipts_Upgrader_Base {
 
   /**
    * @var varies, subclass of htis
@@ -38,8 +38,8 @@ class CRM_Cdntaxreceipts_Upgrader_Base {
   static public function instance() {
     if (! self::$instance) {
       // FIXME auto-generate
-      self::$instance = new CRM_Cdntaxreceipts_Upgrader(
-        'org.civicrm.cdntaxreceipts',
+      self::$instance = new CRM_cpttaxreceipts_Upgrader(
+        'org.cpt.cpttaxreceipts',
         realpath(__DIR__ .'/../../../')
       );
     }
@@ -53,7 +53,7 @@ class CRM_Cdntaxreceipts_Upgrader_Base {
    * task-context; otherwise, this will be non-reentrant.
    *
    * @code
-   * CRM_Cdntaxreceipts_Upgrader_Base::_queueAdapter($ctx, 'methodName', 'arg1', 'arg2');
+   * CRM_cpttaxreceipts_Upgrader_Base::_queueAdapter($ctx, 'methodName', 'arg1', 'arg2');
    * @endcode
    */
   static public function _queueAdapter() {

@@ -5,7 +5,7 @@ require_once('CRM/Contribute/PseudoConstant.php');
 require_once('CRM/Utils/Type.php');
 require_once('CRM/Utils/Array.php');
 
-class CRM_Cdntaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
+class CRM_cpttaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
 
    protected $_useEligibilityHooks = FALSE;
 
@@ -18,7 +18,7 @@ class CRM_Cdntaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
         'fields' =>
         array(
           'sort_name' =>
-          array('title' => ts('Contact Name', array('domain' => 'org.civicrm.cdntaxreceipts')),
+          array('title' => ts('Contact Name', array('domain' => 'org.cpt.cpttaxreceipts')),
             'required' => TRUE,
           ),
           'id' =>
@@ -32,7 +32,7 @@ class CRM_Cdntaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
         array(
           'sort_name' =>
           array(
-            'title' => ts('Last Name, First Name', array('domain' => 'org.civicrm.cdntaxreceipts')),
+            'title' => ts('Last Name, First Name', array('domain' => 'org.cpt.cpttaxreceipts')),
           ),
         ),
       ),
@@ -61,7 +61,7 @@ class CRM_Cdntaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
           array(
             'operatorType' => CRM_Report_Form::OP_DATE),
           'financial_type_id' =>
-          array('title' => ts('Financial Type', array('domain' => 'org.civicrm.cdntaxreceipts')),
+          array('title' => ts('Financial Type', array('domain' => 'org.cpt.cpttaxreceipts')),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::financialType(),
             'type' => CRM_Utils_Type::T_INT,
@@ -81,7 +81,7 @@ class CRM_Cdntaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
 
     $this->_options =
       array(
-        'use_advanced_eligibility' => array('title' => ts('Use Advanced Eligibility (Hooks - Memory Intensive)', array('domain' => 'org.civicrm.cdntaxreceipts')),
+        'use_advanced_eligibility' => array('title' => ts('Use Advanced Eligibility (Hooks - Memory Intensive)', array('domain' => 'org.cpt.cpttaxreceipts')),
         'type' => 'checkbox',
       ),
     );
@@ -94,7 +94,7 @@ class CRM_Cdntaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
     //check for permission to edit contributions
     if ( ! CRM_Core_Permission::check('access CiviContribute') ) {
       require_once('CRM/Core/Error.php');
-      CRM_Core_Error::fatal(ts('You do not have permission to access this page', array('domain' => 'org.civicrm.cdntaxreceipts')));
+      CRM_Core_Error::fatal(ts('You do not have permission to access this page', array('domain' => 'org.cpt.cpttaxreceipts')));
     }
   }
 
@@ -135,13 +135,13 @@ class CRM_Cdntaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
                    {$this->_aliases['civicrm_contribution']}.is_test = 0
         LEFT  JOIN civicrm_financial_type {$this->_aliases['civicrm_financial_type']}
                 ON {$this->_aliases['civicrm_contribution']}.financial_type_id ={$this->_aliases['civicrm_financial_type']}.id
-        LEFT  JOIN cdntaxreceipts_log_contributions cdntax_c
-                ON {$this->_aliases['civicrm_contribution']}.id = cdntax_c.contribution_id ";
+        LEFT  JOIN cpttaxreceipts_log_contributions cpttax_c
+                ON {$this->_aliases['civicrm_contribution']}.id = cpttax_c.contribution_id ";
 
     if ($includeTemp && $this->_useEligibilityHooks) {
       $this->_from .= "
-        LEFT JOIN cdntaxreceipts_temp_civireport_eligible cdntax_t
-                ON {$this->_aliases['civicrm_contribution']}.id = cdntax_t.contribution_id ";
+        LEFT JOIN cpttaxreceipts_temp_civireport_eligible cpttax_t
+                ON {$this->_aliases['civicrm_contribution']}.id = cpttax_t.contribution_id ";
     }
   }
 
@@ -149,12 +149,12 @@ class CRM_Cdntaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
 
     parent::where();
     $this->_where .= "
-    AND cdntax_c.id IS NULL AND {$this->_aliases['civicrm_contact']}.is_deleted = 0
+    AND cpttax_c.id IS NULL AND {$this->_aliases['civicrm_contact']}.is_deleted = 0
     ";
 
     if ($includeTemp && $this->_useEligibilityHooks) {
       $this->_where .= "
-      AND cdntax_t.contribution_id IS NOT NULL
+      AND cpttax_t.contribution_id IS NOT NULL
       ";
     }
     else {
@@ -193,7 +193,7 @@ class CRM_Cdntaxreceipts_Form_Report_ReceiptsNotIssued extends CRM_Report_Form {
 
   function createTempEligibilityTable() {
     $sql = "
-CREATE TEMPORARY TABLE cdntaxreceipts_temp_civireport_eligible (
+CREATE TEMPORARY TABLE cpttaxreceipts_temp_civireport_eligible (
   contribution_id int unsigned
 ) ENGINE=HEAP DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci";
     CRM_Core_DAO::executeQuery($sql);
@@ -205,8 +205,8 @@ CREATE TEMPORARY TABLE cdntaxreceipts_temp_civireport_eligible (
     $dao = CRM_Core_DAO::executeQuery($sql);
 
     while ( $dao->fetch() ) {
-      if ( cdntaxreceipts_eligibleForReceipt($dao->id) ) {
-        $sql = "INSERT INTO cdntaxreceipts_temp_civireport_eligible (contribution_id) VALUES ($dao->id)";
+      if ( cpttaxreceipts_eligibleForReceipt($dao->id) ) {
+        $sql = "INSERT INTO cpttaxreceipts_temp_civireport_eligible (contribution_id) VALUES ($dao->id)";
         CRM_Core_DAO::executeQuery($sql);
       }
     }

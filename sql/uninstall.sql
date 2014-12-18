@@ -1,6 +1,6 @@
--- CDN Tax Receipts Extension
+-- CPT Tax Receipts Extension
 -- last change: 0.9.beta1
 
-DROP TABLE IF EXISTS cdntaxreceipts_log_contributions;
-DROP TABLE IF EXISTS cdntaxreceipts_log;
+DROP TABLE IF EXISTS cpttaxreceipts_log_contributions;
+DROP TABLE IF EXISTS cpttaxreceipts_log;
 

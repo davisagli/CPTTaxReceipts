@@ -6,15 +6,15 @@
 return array (
   0 => 
   array (
-    'name' => 'CRM_Cdntaxreceipts_Form_Report_ReceiptsIssued',
+    'name' => 'CRM_cpttaxreceipts_Form_Report_ReceiptsIssued',
     'entity' => 'ReportTemplate',
     'params' => 
     array (
       'version' => 3,
       'label' => 'Tax Receipts - Receipts Issued',
-      'description' => 'Tax Receipts - ReceiptsIssued (org.civicrm.cdntaxreceipts)',
-      'class_name' => 'CRM_Cdntaxreceipts_Form_Report_ReceiptsIssued',
-      'report_url' => 'cdntaxreceipts/receiptsissued',
+      'description' => 'Tax Receipts - ReceiptsIssued (org.cpt.cpttaxreceipts)',
+      'class_name' => 'CRM_cpttaxreceipts_Form_Report_ReceiptsIssued',
+      'report_url' => 'cpttaxreceipts/receiptsissued',
       'component' => 'CiviContribute',
     ),
   ),

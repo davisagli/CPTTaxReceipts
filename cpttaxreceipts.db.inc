@@ -5,16 +5,16 @@
  */
 
 /**
- * cdntaxreceipts_issued_on
+ * cpttaxreceipts_issued_on
  *
  * Return unix timestamp of when the contribution was first issued
  * This checks both 'single' and 'annual' receipts.
  */
 
-function cdntaxreceipts_issued_on($contribution_id) {
+function cpttaxreceipts_issued_on($contribution_id) {
 
-  $sql = "SELECT issued_on, l.id as receipt_id FROM cdntaxreceipts_log l
-    INNER JOIN cdntaxreceipts_log_contributions c ON l.id = c.receipt_id
+  $sql = "SELECT issued_on, l.id as receipt_id FROM cpttaxreceipts_log l
+    INNER JOIN cpttaxreceipts_log_contributions c ON l.id = c.receipt_id
     WHERE is_duplicate = 0 AND contribution_id = $contribution_id";
 
   $dao = CRM_Core_DAO::executeQuery($sql);
@@ -28,16 +28,16 @@ function cdntaxreceipts_issued_on($contribution_id) {
 }
 
 /**
- * cdntaxreceipts_annual_issued_on
+ * cpttaxreceipts_annual_issued_on
  *
  * Returns list($issued_on, receipt_id) of when an annual receipt was issued for the given contact and year.
  * (NULL,NULL) if no annual receipt has been issued.
  */
 
-function cdntaxreceipts_annual_issued_on($contactId, $year) {
+function cpttaxreceipts_annual_issued_on($contactId, $year) {
 
-  $sql = "SELECT issued_on, l.id as receipt_id FROM cdntaxreceipts_log l
-    INNER JOIN cdntaxreceipts_log_contributions c ON l.id = c.receipt_id
+  $sql = "SELECT issued_on, l.id as receipt_id FROM cpttaxreceipts_log l
+    INNER JOIN cpttaxreceipts_log_contributions c ON l.id = c.receipt_id
     WHERE is_duplicate = 0 AND issue_type = 'annual' AND contact_id = $contactId
       AND year(receive_date) = $year";
 
@@ -50,7 +50,7 @@ function cdntaxreceipts_annual_issued_on($contactId, $year) {
   }
 
 }/**
- * cdntaxreceipts_all_issued_on
+ * cpttaxreceipts_all_issued_on
  *
  * Return all records of when the contribution was receipted
  * This checks 'single', 'annual' and 'aggregate' receipts.
@@ -58,14 +58,14 @@ function cdntaxreceipts_annual_issued_on($contactId, $year) {
  * @param $contribution_id - the contribution being looked up
  */
 
-function cdntaxreceipts_all_issued_on($contribution_id) {
+function cpttaxreceipts_all_issued_on($contribution_id) {
 
   $issued_on = array();
 
   $sql = "
     SELECT l.issued_on, l.id as receipt_id, l.is_duplicate, l.issue_type, l.issue_method
-    FROM cdntaxreceipts_log l
-    INNER JOIN cdntaxreceipts_log_contributions c ON l.id = c.receipt_id
+    FROM cpttaxreceipts_log l
+    INNER JOIN cpttaxreceipts_log_contributions c ON l.id = c.receipt_id
     WHERE contribution_id = {$contribution_id}
     GROUP BY l.issued_on, l.is_duplicate, l.id as receipt_id, l.issue_type, l.issue_method";
 
@@ -86,16 +86,16 @@ function cdntaxreceipts_all_issued_on($contribution_id) {
 }
 
 
-function cdntaxreceipts_contributions_not_receipted($contactId, $year) {
+function cpttaxreceipts_contributions_not_receipted($contactId, $year) {
 
   $sql = "SELECT contrib.id as contribution_id, contrib.total_amount,
         ifnull(contrib.non_deductible_amount, 0) as non_deductible_amount, contrib.receive_date
     FROM civicrm_contribution contrib
     INNER JOIN civicrm_financial_type contrib_type
             ON contrib.financial_type_id = contrib_type.id
-    LEFT  JOIN cdntaxreceipts_log_contributions cdntax_c
-            ON contrib.id = cdntax_c.contribution_id
-    WHERE cdntax_c.receipt_id IS NULL AND contrib_type.name <> 'In-kind'
+    LEFT  JOIN cpttaxreceipts_log_contributions cpttax_c
+            ON contrib.id = cpttax_c.contribution_id
+    WHERE cpttax_c.receipt_id IS NULL AND contrib_type.name <> 'In-kind'
       AND contrib.contact_id = $contactId AND YEAR(contrib.receive_date) = $year
     ORDER BY contrib.id";
 
@@ -107,7 +107,7 @@ function cdntaxreceipts_contributions_not_receipted($contactId, $year) {
   // lot of database calls versus loading each contribution object individually.
 
   while ( $dao->fetch() ) {
-    if ( cdntaxreceipts_eligibleForReceipt($dao->contribution_id) ) {
+    if ( cpttaxreceipts_eligibleForReceipt($dao->contribution_id) ) {
       $contributions[] = array(
         'contribution_id' => $dao->contribution_id,
         'total_amount' => $dao->total_amount,
@@ -121,12 +121,12 @@ function cdntaxreceipts_contributions_not_receipted($contactId, $year) {
 }
 
 /**
- * cdntaxreceipts_load_receipt
+ * cpttaxreceipts_load_receipt
  *
  * Return associative array of receipt details for the given receipt_id
  */
 
-function cdntaxreceipts_load_receipt($receipt_id) {
+function cpttaxreceipts_load_receipt($receipt_id) {
   $receipt = array();
   if (!isset($receipt_id)) {
     return $receipt;
@@ -135,8 +135,8 @@ function cdntaxreceipts_load_receipt($receipt_id) {
   $sql = "SELECT l.id, l.receipt_no, l.issued_on, l.contact_id, l.receipt_amount as total_receipt,
         l.is_duplicate, l.uid, l.ip, l.issue_type, l.issue_method,
         c.contribution_id, c.contribution_amount, c.receipt_amount, c.receive_date
-    FROM cdntaxreceipts_log l
-    INNER JOIN cdntaxreceipts_log_contributions c ON l.id = c.receipt_id
+    FROM cpttaxreceipts_log l
+    INNER JOIN cpttaxreceipts_log_contributions c ON l.id = c.receipt_id
     WHERE is_duplicate = 0 AND l.id = {$receipt_id}";
 
   $dao = CRM_Core_DAO::executeQuery($sql);
@@ -154,7 +154,7 @@ function cdntaxreceipts_load_receipt($receipt_id) {
       'uname' => $issued_by['uf_name'] . ' (' . $dao->uid . ')',
       'ip' => $dao->ip,
       'issue_type' => $dao->issue_type,
-      'display_type' => _cdntaxreceipts_get_display_type($dao->issue_type),
+      'display_type' => _cpttaxreceipts_get_display_type($dao->issue_type),
       'issue_method' => $dao->issue_method,
     );
 
@@ -176,13 +176,13 @@ function cdntaxreceipts_load_receipt($receipt_id) {
 }
 
 /**
- * cdntaxreceipts_log
+ * cpttaxreceipts_log
  *
  * Log the issuance
  */
 
  //TODO: Should return success or failure
-function cdntaxreceipts_log($receipt) {
+function cpttaxreceipts_log($receipt) {
 
   $uid = CRM_Utils_System::getLoggedInUfID();
 
@@ -198,7 +198,7 @@ function cdntaxreceipts_log($receipt) {
     8 => array( $receipt['issue_type'], 'String' ),
     9 => array( $receipt['issue_method'], 'String' ),
   );
-  $sql = "INSERT INTO cdntaxreceipts_log (receipt_no, issued_on, contact_id, receipt_amount,
+  $sql = "INSERT INTO cpttaxreceipts_log (receipt_no, issued_on, contact_id, receipt_amount,
     is_duplicate, uid, ip, issue_type, issue_method)
       VALUES (%1, %2, %3, %4, %5, %6, %7, %8, %9)";
   $result = CRM_Core_DAO::executeQuery($sql, $params);
@@ -213,7 +213,7 @@ function cdntaxreceipts_log($receipt) {
       4 => array( $contribution['receipt_amount'], 'Money' ),
       5 => array( $contribution['receive_date'], 'String' ),
     );
-    $sql = "INSERT INTO cdntaxreceipts_log_contributions (receipt_id, contribution_id,
+    $sql = "INSERT INTO cpttaxreceipts_log_contributions (receipt_id, contribution_id,
       contribution_amount, receipt_amount, receive_date)
         VALUES (%1, %2, %3, %4, %5)";
     CRM_Core_DAO::executeQuery($sql, $params);
@@ -236,7 +236,7 @@ function cdntaxreceipts_log($receipt) {
  *   'receipt_id' => $dao->receipt_id,
 );
  */
-function cdntaxreceipts_contributions_get_status($contributionIds = array()) {
+function cpttaxreceipts_contributions_get_status($contributionIds = array()) {
   $contributions = array();
 
   $ids = implode(',', $contributionIds);
@@ -250,12 +250,12 @@ function cdntaxreceipts_contributions_get_status($contributionIds = array()) {
       , ifnull(contrib.non_deductible_amount, 0) as non_deductible_amount
       , contrib.receive_date
       , YEAR(contrib.receive_date) as receive_year
-      , IF(cdntax_c.receipt_id IS NULL, 0, cdntax_c.receipt_id) as receipt_id
+      , IF(cpttax_c.receipt_id IS NULL, 0, cpttax_c.receipt_id) as receipt_id
     FROM civicrm_contribution contrib
     INNER JOIN civicrm_financial_type contrib_type
             ON contrib.financial_type_id = contrib_type.id
-    LEFT  JOIN cdntaxreceipts_log_contributions cdntax_c
-            ON contrib.id = cdntax_c.contribution_id
+    LEFT  JOIN cpttaxreceipts_log_contributions cpttax_c
+            ON contrib.id = cpttax_c.contribution_id
     WHERE contrib_type.name <> 'In-kind' AND contrib.id IN($ids)";
 
     $dao = CRM_Core_DAO::executeQuery($sql);
@@ -263,7 +263,7 @@ function cdntaxreceipts_contributions_get_status($contributionIds = array()) {
     while ($dao->fetch()) {
       $id = $dao->contribution_id;
 
-      $eligible = cdntaxreceipts_eligibleForReceipt($id);
+      $eligible = cpttaxreceipts_eligibleForReceipt($id);
       $contributions[$id] = array(
         'contribution_id' => $id,
         'contact_id' => $dao->contact_id,
@@ -277,7 +277,7 @@ function cdntaxreceipts_contributions_get_status($contributionIds = array()) {
     }
   }
   foreach ($contributions as $id => $contrib) {
-    $contributions[$id]['non_deductible_amount'] = $contributions[$id]['total_amount'] - cdntaxreceipts_eligibleAmount($id);
+    $contributions[$id]['non_deductible_amount'] = $contributions[$id]['total_amount'] - cpttaxreceipts_eligibleAmount($id);
   }
 
   return $contributions;

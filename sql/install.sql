@@ -1,18 +1,20 @@
--- CDN Tax Receipts Extension
+-- CPT Tax Receipts Extension
+
+
 -- last change: 0.9.beta1
 
 -- NOTE: We avoid direct foreign keys to CiviCRM schema because this log should
 -- remain intact even if a particular contact or contribution is deleted (for
 -- auditing purposes).
 
-DROP TABLE IF EXISTS cdntaxreceipts_log_contributions;
-DROP TABLE IF EXISTS cdntaxreceipts_log;
+DROP TABLE IF EXISTS cpttaxreceipts_log_contributions;
+DROP TABLE IF EXISTS cpttaxreceipts_log;
 
 --
--- Table structure for table `cdntaxreceipts_log`
+-- Table structure for table `cpttaxreceipts_log`
 --
 
-CREATE TABLE cdntaxreceipts_log (
+CREATE TABLE cpttaxreceipts_log (
   id int(11) NOT NULL AUTO_INCREMENT COMMENT 'The internal id of the issuance.',
   receipt_no varchar(128) NOT NULL  COMMENT 'Receipt Number.',
   issued_on int(11) NOT NULL COMMENT 'Unix timestamp of when the receipt was issued, or re-issued.',
@@ -30,10 +32,10 @@ CREATE TABLE cdntaxreceipts_log (
 
 
 --
--- Table structure for table `cdntaxreceipts_log_contributions`
+-- Table structure for table `cpttaxreceipts_log_contributions`
 --
 
-CREATE TABLE cdntaxreceipts_log_contributions (
+CREATE TABLE cpttaxreceipts_log_contributions (
   id int(11) NOT NULL AUTO_INCREMENT COMMENT 'The internal id of this line.',
   receipt_id int(11) NOT NULL COMMENT 'The internal receipt ID this line belongs to.',
   contribution_id int(10) unsigned NOT NULL COMMENT 'CiviCRM contribution id for which the reciept is issued.',
@@ -41,6 +43,6 @@ CREATE TABLE cdntaxreceipts_log_contributions (
   receipt_amount decimal(10,2) NOT NULL COMMENT 'Receiptable amount, total minus non-recieptable portion.',
   receive_date datetime NOT NULL COMMENT 'Date on which the contribution was received, redundant information!',
   PRIMARY KEY (id),
-  FOREIGN KEY (receipt_id) REFERENCES cdntaxreceipts_log(id)
+  FOREIGN KEY (receipt_id) REFERENCES cpttaxreceipts_log(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Contributions for each tax reciept issuing.';
 
