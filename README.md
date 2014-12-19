@@ -37,3 +37,9 @@ Operations
 These are receipts that collect all outstanding contributions for the year into one receipt.
 
 To issue Annual Tax Receipts, go to Search > Find Contacts (or Search > Advanced Search), run a search for contacts, select one or more contacts, and select "Issue Annual Tax Receipts" in the actions drop-down. Follow on-screen instructions from there.
+
+
+TODO:
+- install summary fields extension and tt Mark re which contacts to include
+- check with Mark re font
+- do we need something different for Canada/Intl?

@@ -70,7 +70,6 @@ function cpttaxreceipts_processTaxReceipt( $receipt, &$collectedPdf = NULL, $pre
 
   $mailparams = array(
     'from' => $org_name . ' <' . $email_from . '> ',
-    'toEmail' => $email,
     'toName' => $displayname,
     'attachments' => array( $attachment ),
     'subject' => $email_subject,
