@@ -57,26 +57,12 @@
           <p class="description">{ts domain='org.cpt.cpttaxreceipts'}Receipt numbers are formed by appending the CiviCRM Contribution ID to this prefix. Receipt numbers must be unique within your organization. If you also issue tax receipts using another system, you can use the prefix to ensure uniqueness (e.g. enter 'WEB-' here so all receipts issued through CiviCRM are WEB-00000001, WEB-00000002, etc.){/ts}</p></td>
       </tr>
       <tr>
-        <td class="label">{$form.receipt_authorized_signature_text.label}</td>
-        <td class="content">{$form.receipt_authorized_signature_text.html}
-          <p class="description">{ts domain='org.cpt.cpttaxreceipts'}Name and position of the authorizing official to be displayed under the signature line. Defaults to "Authorized Signature" if no name is specified.{/ts}</p></td>
-      </tr>
-      <tr>
         <td class="label">{$form.receipt_logo.label}</td>
         <td class="content">{$form.receipt_logo.html}
           <p class="description">{ts domain='org.cpt.cpttaxreceipts'}Logo size: 280x120 pixels; File types allowed: .jpg .png.{/ts}</p>
 	  {if $receipt_logo}
 	      {if $receipt_logo_class}<span class="crm-error">The file {$receipt_logo} was not found</span>
 	      {else}<p class="label">Current {$form.receipt_logo.label}: {$receipt_logo}</p>{/if}
-	  {/if}</td>
-      </tr>
-      <tr>
-        <td class="label">{$form.receipt_signature.label}</td>
-        <td class="content">{$form.receipt_signature.html}
-          <p class="description">{ts domain='org.cpt.cpttaxreceipts'}Signature size: 141x58 pixels; File types allowed: .jpg .png.{/ts}</p>
-	  {if $receipt_signature}
-	      {if $receipt_signature_class}<span class="crm-error">The file {$receipt_signature} was not found</span>
-	      {else}<p class="label">Current {$form.receipt_signature.label}: {$receipt_signature}</p>{/if}
 	  {/if}</td>
       </tr>
       <tr>
@@ -104,11 +90,6 @@
 
   <table class="form-layout">
     <tbody>
-      <tr>
-        <td class="label">{$form.issue_inkind.label}</td>
-        <td class="content">{$form.issue_inkind.html}
-          <p class="description">{ts domain='org.cpt.cpttaxreceipts'}Checking this box will set up the fields required to generate in-kind tax receipts. Unchecking the box will not disable in-kind receipts: you will need to do that manually, by disabling the In-kind contribution type or making it non-deductible in the CiviCRM administration pages.{/ts}</p></td>
-      </tr>
       <tr>
         <td class="label">{$form.enable_email.label}</td>
         <td class="content">{$form.enable_email.html}
@@ -143,8 +124,6 @@
       </tr>
     </tbody>
   </table>
-
-<div class="status message"><strong>Tip:</strong>{ts domain='org.cpt.cpttaxreceipts'}After you fill out this form and save your Configuration, create a fake Donation in CiviCRM and issue a Tax Receipt for it to check the graphics/layout of the Tax Receipt that is generated. If necessary - rework your graphics and come back to this Form to upload the new version(s).{/ts}</div>
 
 {* FOOTER *}
 <div class="crm-submit-buttons">

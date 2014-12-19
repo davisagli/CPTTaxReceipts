@@ -19,7 +19,7 @@
     <url desc="documentation">https://github.com/davisagli/cpttaxreceipts/blob/master/README.md</url>
   </urls>
   <comments>
-      Based on the CPT Tax Receipts extension (https://github.com/jake-mw/CDNTaxReceipts)
+      Based on the CDN Tax Receipts extension (https://github.com/jake-mw/CDNTaxReceipts)
   </comments>
   <civix>
     <namespace>CRM/CPTTaxReceipts</namespace>

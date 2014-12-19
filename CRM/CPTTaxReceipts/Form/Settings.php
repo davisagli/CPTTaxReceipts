@@ -35,7 +35,7 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
       ),
     ));
     // Set image defaults
-    $images = array('receipt_logo', 'receipt_signature', 'receipt_watermark', 'receipt_pdftemplate');
+    $images = array('receipt_logo', 'receipt_watermark', 'receipt_pdftemplate');
     foreach ($images as $image) {
       if (CRM_Utils_Array::value($image, $defaults)) {
         $this->assign($image, $defaults[$image]);
@@ -77,7 +77,6 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
         'org_email' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'org_email'),
         'org_web' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'org_web'),
         'receipt_logo' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_logo'),
-        'receipt_signature' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_signature'),
         'receipt_watermark' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_watermark'),
         'receipt_pdftemplate' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_pdftemplate'),
         'org_charitable_no' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'org_charitable_no'),
@@ -101,7 +100,6 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
   function processReceiptOptions($mode) {
     if ( $mode == 'build' ) {
       $this->add('text', 'receipt_prefix', ts('Receipt Prefix', array('domain' => 'org.cpt.cpttaxreceipts')));
-      $this->add('text', 'receipt_authorized_signature_text', ts('Authorized Signature Text', array('domain' => 'org.cpt.cpttaxreceipts')));
 
       $config = CRM_Core_Config::singleton( );
       if ($config->maxImportFileSize >= 8388608 ) {
@@ -118,10 +116,6 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
       $this->addUploadElement('receipt_logo');
       $this->addRule( 'receipt_logo', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.cpt.cpttaxreceipts') );
 
-      $this->addElement('file', 'receipt_signature', ts('Signature Image', array('domain' => 'org.cpt.cpttaxreceipts')), 'size=30 maxlength=60');
-      $this->addUploadElement('receipt_signature');
-      $this->addRule( 'receipt_signature', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.cpt.cpttaxreceipts') );
-
       $this->addElement('file', 'receipt_watermark', ts('Watermark Image', array('domain' => 'org.cpt.cpttaxreceipts')), 'size=30 maxlength=60');
       $this->addUploadElement('receipt_watermark');
       $this->addRule( 'receipt_watermark', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.cpt.cpttaxreceipts') );
@@ -133,22 +127,19 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
     else if ( $mode == 'defaults' ) {
       $defaults = array(
         'receipt_prefix' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_prefix'),
-        'receipt_authorized_signature_text' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_authorized_signature_text'),
       );
       return $defaults;
     }
     else if ( $mode == 'post' ) {
       $values = $this->exportValues();
       CRM_Core_BAO_Setting::setItem($values['receipt_prefix'], self::SETTINGS, 'receipt_prefix');
-      CRM_Core_BAO_Setting::setItem($values['receipt_authorized_signature_text'], self::SETTINGS, 'receipt_authorized_signature_text');
 
       $receipt_logo = $this->getSubmitValue('receipt_logo');
-      $receipt_signature = $this->getSubmitValue('receipt_signature');
       $receipt_watermark = $this->getSubmitValue('receipt_watermark');
       $receipt_pdftemplate = $this->getSubmitValue('receipt_pdftemplate');
 
       $config = CRM_Core_Config::singleton( );
-      foreach ( array('receipt_logo', 'receipt_signature', 'receipt_watermark', 'receipt_pdftemplate') as $key ) {
+      foreach ( array('receipt_logo', 'receipt_watermark', 'receipt_pdftemplate') as $key ) {
         $upload_file = $this->getSubmitValue($key);
         if (is_array($upload_file)) {
           if ( $upload_file['error'] == 0 ) {
@@ -165,8 +156,6 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
 
   function processSystemOptions($mode) {
     if ( $mode == 'build' ) {
-      $this->addElement('checkbox', 'issue_inkind', ts('Setup in-kind receipts?', array('domain' => 'org.cpt.cpttaxreceipts')));
-
       $yesno_options = array();
       $yesno_options[] = $this->createElement('radio', NULL, NULL, 'Yes', 1);
       $yesno_options[] = $this->createElement('radio', NULL, NULL, 'No', 0);
@@ -175,7 +164,6 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
     }
     else if ( $mode == 'defaults' ) {
       $defaults = array(
-        'issue_inkind' => 0,
         'enable_email' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'enable_email', NULL, 0),
       );
       return $defaults;
@@ -183,12 +171,6 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
     else if ( $mode == 'post' ) {
       $values = $this->exportValues();
       CRM_Core_BAO_Setting::setItem($values['enable_email'], self::SETTINGS, 'enable_email');
-
-      if (isset($values['issue_inkind']) == TRUE) {
-        if ( $values['issue_inkind'] == 1 ) {
-          cpttaxreceipts_configure_inkind_fields();
-        }
-      }
     }
   }
 

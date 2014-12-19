@@ -27,6 +27,7 @@ function cpttaxreceipts_contributions($contactId, $year) {
         'total_amount' => $dao->total_amount,
         'non_deductible_amount' => $dao->non_deductible_amount,
         'receive_date' => $dao->receive_date,
+        'source' => $dao->source,
       );
     }
   }

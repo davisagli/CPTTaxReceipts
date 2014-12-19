@@ -6,8 +6,6 @@
  */
 class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Task {
 
-  const MAX_RECEIPT_COUNT = 1000;
-
   private $_receipts;
   private $_years;
 
@@ -37,9 +35,7 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
     // count and categorize contributions
     foreach ( $this->_contactIds as $id ) {
       foreach ( $this->_years as $year ) {
-        list( $issuedOn, $receiptId ) = cpttaxreceipts_annual_issued_on($id, $year);
-
-        $eligible = count(cpttaxreceipts_contributions_not_receipted($id, $year));
+        $eligible = count(cpttaxreceipts_contributions($id, $year));
         if ( $eligible > 0 ) {
           list( $method, $email ) = cpttaxreceipts_sendMethodForContact($id);
           $receipts[$year][$method]++;
@@ -151,16 +147,9 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
 
     foreach ($this->_contactIds as $contactId ) {
 
-      list( $issuedOn, $receiptId ) = cpttaxreceipts_annual_issued_on($contactId, $year);
-      $contributions = cpttaxreceipts_contributions_not_receipted($contactId, $year);
+      $contributions = cpttaxreceipts_contributions($contactId, $year);
 
-      if ( $emailCount + $printCount + $failCount >= self::MAX_RECEIPT_COUNT ) {
-        $status = ts('Maximum of %1 tax receipt(s) were sent. Please repeat to continue processing.', array(1=>self::MAX_RECEIPT_COUNT, 'domain' => 'org.cpt.cpttaxreceipts'));
-        CRM_Core_Session::setStatus($status, '', 'info');
-        break;
-      }
-
-      if ( empty($issuedOn) && count($contributions) > 0 ) {
+      if ( count($contributions) > 1 ) {
 
         list( $ret, $method ) = cpttaxreceipts_issueAnnualTaxReceipt($contactId, $year, $receiptsForPrinting, $previewMode);
 
