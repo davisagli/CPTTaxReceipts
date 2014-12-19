@@ -72,6 +72,7 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
     $this->assign('receiptCount', $receipts);
     $this->assign('receiptTotal', $receiptTotal);
     $this->assign('receiptYears', $this->_years);
+    $this->assign('enable_email', CRM_Core_BAO_Setting::getItem('cpttaxreceipts', 'enable_email'));
 
     // add radio buttons
     foreach ( $this->_years as $year ) {

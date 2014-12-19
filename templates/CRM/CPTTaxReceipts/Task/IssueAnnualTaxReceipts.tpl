@@ -8,16 +8,20 @@
     <thead>
       <th width=30%>{ts domain='org.cpt.cpttaxreceipts'}Select Tax Year{/ts}</th>
       <th width=30%>{ts domain='org.cpt.cpttaxreceipts'}Receipts Outstanding{/ts}</th>
-      <th width=20%>{ts domain='org.cpt.cpttaxreceipts'}Email{/ts}</th>
-      <th>Print</th>
+      {if $enable_email}
+        <th width=20%>{ts domain='org.cpt.cpttaxreceipts'}Email{/ts}</th>
+        <th>Print</th>
+      {/if}
     </thead>
     {foreach from=$receiptYears item=year}
       {assign var="key" value="issue_$year"}
       <tr class="{cycle values="odd-row,even-row"}">
         <td>{$form.receipt_year.$key.html}</td>
         <td>{if $receiptCount.$year.total}{$receiptCount.$year.total} ({$receiptCount.$year.contrib} contributions){else}0{/if}</td>
-        <td>{$receiptCount.$year.email}</td>
-        <td>{$receiptCount.$year.print}</td>
+        {if $enable_email}
+          <td>{$receiptCount.$year.email}</td>
+          <td>{$receiptCount.$year.print}</td>
+        {/if}
       </tr>
     {/foreach}
   </table>
@@ -25,10 +29,14 @@
     total of all eligible contributions received from the donor during the selected year.{/ts}</p>
   <p>
   <ul>
-  <li>{ts domain='org.cpt.cpttaxreceipts'}Email receipts will be emailed directly to the contributor.{/ts}</li>
+  {if $enable_email}
+    <li>{ts domain='org.cpt.cpttaxreceipts'}Email receipts will be emailed directly to the contributor.{/ts}</li>
+  {/if}
   <li>{ts domain='org.cpt.cpttaxreceipts'}Print receipts will be compiled into a file for download.  Please print and mail any receipts in this file.{/ts}</li>
   </ul>
   </p>
-  <p>{$form.is_preview.html} {$form.is_preview.label} {ts domain='org.cpt.cpttaxreceipts'}(Generates receipts marked 'preview', but does not issue the receipts.  No emails sent.){/ts}</p>
+  {if $enable_email}
+    <p>{$form.is_preview.html} {$form.is_preview.label} {ts domain='org.cpt.cpttaxreceipts'}(Generates receipts marked 'preview', but does not issue the receipts.  No emails sent.){/ts}</p>
+  {/if}
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 </div>

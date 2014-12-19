@@ -127,7 +127,7 @@ function cpttaxreceipts_generateFormattedReceipt( $receipt, &$collectedPdf = NUL
   $parts = array();
   foreach(array('city', 'state_province', 'postal_code')  as $addr_part) {
     if (isset($address[$addr_part])) {
-      $parts[] = $address[$addr_part];
+      $parts[] = $address[$addr_part] . ($addr_part == 'city' ? ',' : '');
     }
   }
   $address_line_1b = isset($address['supplemental_address_1']) ? $address['supplemental_address_1'] : '';
@@ -309,7 +309,10 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
   $pdf->setFont('Helvetica', '', 8);
   $page_width = $pdf->getPageWidth();
   $pdf->setXY($mymargin_left, 88);
+  $i = 0;
+  $perpage = 21;
   foreach ( $receipt_contributions as $contrib ) {
+    $i += 1;
     $date = new DateTime($contrib['receive_date']);
     $formatted_date = $date->format('n/j/Y');
     $pdf->Cell(25, 8, $formatted_date, 0, 0, 'L');
@@ -318,6 +321,11 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
     $formatted_amount = money_format('$%.2n', $contrib['receipt_amount']);
     $pdf->Cell(25, 8, $formatted_amount, 0, 1, 'R');
     $pdf->Line($mymargin_left, $pdf->getY(), 161, $pdf->getY());
+    if ($i == $perpage) {
+      $i = 0;
+      $perpage = 31;  // more on subsequent pages
+      $pdf->AddPage('', '', TRUE);
+    }
   }
 
   // Total

@@ -7,7 +7,7 @@
 
 function cpttaxreceipts_contributions($contactId, $year) {
 
-  $sql = "SELECT contrib.id as contribution_id, contrib.total_amount,
+  $sql = "SELECT contrib.id as contribution_id, contrib.total_amount, contrib.source,
         ifnull(contrib.non_deductible_amount, 0) as non_deductible_amount, contrib.receive_date
     FROM civicrm_contribution contrib
     WHERE contrib.contact_id = $contactId AND YEAR(contrib.receive_date) = $year
