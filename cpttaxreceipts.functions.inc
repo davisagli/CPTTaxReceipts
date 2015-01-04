@@ -258,7 +258,7 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
   }
 
   // Right section
-  $x_detailscolumn = 120;
+  $x_detailscolumn = 140;
   $y_detailscolumnstart = 22;
   $pdf_template_file = CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'receipt_pdftemplate');
   if (!empty($pdf_template_file)) {
@@ -267,15 +267,12 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
     if ( $background_image ) $pdf->Image(CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'receipt_watermark'), $mymargin_left + $x_detailscolumn, $mymargin_top + $y_detailscolumnstart + 6, '', 40);
   }
   $pdf->SetFont('Helvetica', 'B', 8);
-  $pdf->SetXY($mymargin_left + $x_detailscolumn, $mymargin_top + $y_detailscolumnstart + 8);
+  $pdf->SetXY($mymargin_left + $x_detailscolumn, $mymargin_top + $y_detailscolumnstart + 16);
   $pdf->Write(10, "Receipt No: " . $receipt_number);
-  $pdf->SetXY($mymargin_left + $x_detailscolumn, $mymargin_top + $y_detailscolumnstart + 12);
+  $pdf->SetXY($mymargin_left + $x_detailscolumn, $mymargin_top + $y_detailscolumnstart + 20);
   $pdf->Write(10, "Issue Date: " . $issued_on);
 
   // Left section
-  $pdf->SetFont('Helvetica', 'B', 8);
-  $pdf->SetY($mymargin_top + $y_detailscolumnstart + 6);
-  $pdf->Write(10, "Received from: ", '', 0, 'L', TRUE, 0, FALSE, FALSE, 0);
   $pdf->SetFont('Helvetica', 'B', 10);
   $pdf->SetXY($mymargin_left+10, $mymargin_top + $y_detailscolumnstart + 20);
   $pdf->Write(10, strtoupper($displayname), '', 0, 'L', TRUE, 0, FALSE, FALSE, 0);
@@ -303,15 +300,17 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
 
   // Contribution details
   $pdf->setFont('Helvetica', 'B', 10);
-  $pdf->setXY($mymargin_left, 80);
+  $pdf->setXY($mymargin_left + 15, 80);
   $pdf->Write(8, $detail_heading, '', 0, 'L', TRUE, 0, FALSE, FALSE, 0);
   $pdf->setFont('Helvetica', '', 8);
   $page_width = $pdf->getPageWidth();
-  $pdf->setXY($mymargin_left, 88);
+  $pdf->setXY($mymargin_left + 15, 88);
   $i = 0;
-  $perpage = 21;
+  $perpage = 19;
+  for ( $j = 0; $j < 10; $j++ ) {
   foreach ( $receipt_contributions as $contrib ) {
     $i += 1;
+    $pdf->setX($mymargin_left + 15);
     $date = new DateTime($contrib['receive_date']);
     $formatted_date = $date->format('n/j/Y');
     $pdf->Cell(25, 8, $formatted_date, 0, 0, 'L');
@@ -319,29 +318,28 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
     $pdf->Cell(100, 8, $formatted_source, 0, 0, 'L');
     $formatted_amount = money_format('$%.2n', $contrib['receipt_amount']);
     $pdf->Cell(25, 8, $formatted_amount, 0, 1, 'R');
-    $pdf->Line($mymargin_left, $pdf->getY(), 161, $pdf->getY());
+    $pdf->Line($mymargin_left + 15, $pdf->getY(), 176, $pdf->getY());
     if ($i == $perpage) {
       $i = 0;
-      $perpage = 31;  // more on subsequent pages
+      $perpage = 24;
       $pdf->AddPage('', '', TRUE);
+      $pdf->setY(48);
     }
+  }
   }
 
   // Total
-  $pdf->setXY($mymargin_left, $pdf->getY() + 2);
+  $pdf->setXY($mymargin_left + 15, $pdf->getY() + 2);
   $pdf->setFont('Helvetica', 'B', 10);
   $pdf->Cell(125, 10, 'TOTAL', 0, 0, 'R');
   $total = money_format('$%.2n', $amount);
   $pdf->Cell(25, 10, $total, 0, 1, 'R');
 
   // Bottom section
-  if (!empty($pdf_template_file)) {
-  } else {
-    $pdf->setY($pdf->GetY() + 10);
-    $pdf->Cell(161, 14, $thankyou, 0, 1, 'C');
-    $pdf->setFont('Helvetica', 'I', 8);
-    $pdf->Cell(161, 8, $tax_notice, 0, 0, 'C');
-  }
+  $pdf->setY($pdf->GetY() + 10);
+  $pdf->Cell(176, 14, $thankyou, 0, 1, 'C');
+  $pdf->setFont('Helvetica', 'I', 8);
+  $pdf->Cell(176, 8, $tax_notice, 0, 0, 'C');
 
 }
 
