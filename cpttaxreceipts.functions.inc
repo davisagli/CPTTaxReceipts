@@ -307,7 +307,6 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
   $pdf->setXY($mymargin_left + 15, 88);
   $i = 0;
   $perpage = 19;
-  for ( $j = 0; $j < 10; $j++ ) {
   foreach ( $receipt_contributions as $contrib ) {
     $i += 1;
     $pdf->setX($mymargin_left + 15);
@@ -325,7 +324,6 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
       $pdf->AddPage('', '', TRUE);
       $pdf->setY(48);
     }
-  }
   }
 
   // Total
