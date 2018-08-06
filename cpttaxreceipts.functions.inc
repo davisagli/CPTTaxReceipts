@@ -372,7 +372,7 @@ function cpttaxreceipts_eligibleForReceipt( $contributionId ) {
   //   module implementations should return an array containing a single item,
   //   either TRUE or FALSE. assumes TRUE until we receive a FALSE. one FALSE
   //   disqualifies the contribution for a tax receipt.
-  $results = CRM_Utils_Hook::singleton()->invoke(1, $contribution, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'cpttaxreceipts_eligible');
+  $results = CRM_Utils_Hook::singleton()->invoke(1, $contribution, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'cpttaxreceipts_eligible');
   $hookOk = TRUE;
 
   if (is_array($results)) {
@@ -405,7 +405,7 @@ function cpttaxreceipts_eligibleAmount( $contributionId ) {
   $deductibleAmount = $contribution->total_amount - $contribution->non_deductible_amount;
  
   // 2. allow modules to alter the amount. lowest amount wins.
-  $results = CRM_Utils_Hook::singleton()->invoke(1, $contribution, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'cpttaxreceipts_eligibleAmount');
+  $results = CRM_Utils_Hook::singleton()->invoke(1, $contribution, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'cpttaxreceipts_eligibleAmount');
 
   if (is_array($results)) {
     foreach ( $results as $result ) {
@@ -491,7 +491,7 @@ function cpttaxreceipts_sendMethodForContact( $contactId ) {
   //   module implementations should return an array containing a single item,
   //   either 'email' or 'print'. if we receive one or more 'print', the contact
   //   is disqualified from receiving email receipts. 
-  $results = CRM_Utils_Hook::singleton()->invoke(1, $contactId, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'cpttaxreceipts_method');
+  $results = CRM_Utils_Hook::singleton()->invoke(1, $contactId, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'cpttaxreceipts_method');
   $emailOk = TRUE;
 
   if (is_array($results)) {
@@ -610,4 +610,32 @@ function cpttaxreceipts_getAddress($contact_id) {
   CRM_Core_BAO_Address::fixAddress($address);
 
   return $address;
+}
+
+/**
+ * Returns a setting of CiviCRM.
+ *
+ * @param string $key the setting to retrieve.
+ * @return string the value of the $key setting.
+ */
+function cdntaxreceipts_getCiviSetting($key) {
+  $result = civicrm_api3('Setting', 'get', array(
+    'sequential' => 1,
+    'return' => array($key),
+  ));
+  $settings = CRM_Utils_Array::first($result['values']);
+  return isset($settings[$key]) ? $settings[$key] : NULL;
+}
+
+/**
+ * Sets the value of a CiviCRM setting.
+ *
+ * @param string $key the setting to set.
+ * @paramm string $value the value for the setting.
+ */
+function cdntaxreceipts_setCiviSetting($key, $value) {
+  civicrm_api3('Setting', 'create', array(
+    'sequential' => 1,
+    $key => $value,
+  ));
 }
