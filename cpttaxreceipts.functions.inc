@@ -349,7 +349,7 @@ function cpttaxreceipts_createPDF(&$pdf, $pdf_variables) {
     $pdf->setY($pdf->GetY() + 10);
     $pdf->Cell(176, 14, $thankyou, 0, 1, 'C');
     $pdf->setFont('Helvetica', 'I', 8);
-    $pdf->Cell(176, 8, $tax_notice_1, 0, 0, 'C');
+    $pdf->Cell(176, 8, $tax_notice_1, 0, 1, 'C');
     $pdf->Cell(176, 8, $tax_notice_2, 0, 0, 'C');
   }
 
