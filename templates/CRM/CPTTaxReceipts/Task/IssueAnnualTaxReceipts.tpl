@@ -25,9 +25,15 @@
       </tr>
     {/foreach}
   </table>
-  <p>{ts domain='org.cpt.cpttaxreceipts'}Clicking 'Issue Tax Receipts' will issue annual tax receipts for the selected year. Annual tax receipts are a sum
+  <p>{ts domain='org.cpt.cpttaxreceipts'}Clicking 'Issue Annual Summaries' will issue annual contribution summaries for the selected year. Annual summaries are a sum
     total of all eligible contributions received from the donor during the selected year.{/ts}</p>
   <p>
+
+  <p>
+    <strong>Which template do you want to use?</strong>
+    {$form.template.html}
+  </p>
+
   <ul>
   {if $enable_email}
     <li>{ts domain='org.cpt.cpttaxreceipts'}Email receipts will be emailed directly to the contributor.{/ts}</li>

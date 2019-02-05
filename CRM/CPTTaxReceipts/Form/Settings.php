@@ -35,7 +35,7 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
       ),
     ));
     // Set image defaults
-    $images = array('receipt_logo', 'receipt_watermark', 'receipt_pdftemplate');
+    $images = array('receipt_logo', 'receipt_watermark', 'receipt_pdftemplate', 'receipt_pdftemplate_canada');
     foreach ($images as $image) {
       if (CRM_Utils_Array::value($image, $defaults)) {
         $this->assign($image, $defaults[$image]);
@@ -79,6 +79,7 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
         'receipt_logo' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_logo'),
         'receipt_watermark' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_watermark'),
         'receipt_pdftemplate' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_pdftemplate'),
+        'receipt_pdftemplate_canada' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'receipt_pdftemplate_canada'),
         'org_charitable_no' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'org_charitable_no'),
       );
       return $defaults;
@@ -121,6 +122,10 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
       $this->addElement('file', 'receipt_pdftemplate', ts('PDF Template', array('domain' => 'org.cpt.cpttaxreceipts')), 'size=30 maxlength=60');
       $this->addUploadElement('receipt_pdftemplate');
       $this->addRule( 'receipt_pdftemplate', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.cpt.cpttaxreceipts') );
+
+      $this->addElement('file', 'receipt_pdftemplate_canada', ts('PDF Template (Canada)', array('domain' => 'org.cpt.cpttaxreceipts')), 'size=30 maxlength=60');
+      $this->addUploadElement('receipt_pdftemplate_canada');
+      $this->addRule( 'receipt_pdftemplate_canada', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize, array('domain' => 'org.cpt.cpttaxreceipts') );
     }
     else if ( $mode == 'defaults' ) {
       $defaults = array(
@@ -135,9 +140,10 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
       $receipt_logo = $this->getSubmitValue('receipt_logo');
       $receipt_watermark = $this->getSubmitValue('receipt_watermark');
       $receipt_pdftemplate = $this->getSubmitValue('receipt_pdftemplate');
+      $receipt_pdftemplate_canada = $this->getSubmitValue('receipt_pdftemplate_canada');
 
       $config = CRM_Core_Config::singleton( );
-      foreach ( array('receipt_logo', 'receipt_watermark', 'receipt_pdftemplate') as $key ) {
+      foreach ( array('receipt_logo', 'receipt_watermark', 'receipt_pdftemplate', 'receipt_pdftemplate_canada') as $key ) {
         $upload_file = $this->getSubmitValue($key);
         if (is_array($upload_file)) {
           if ( $upload_file['error'] == 0 ) {

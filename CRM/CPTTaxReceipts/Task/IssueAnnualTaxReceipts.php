@@ -80,6 +80,11 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
     }
     $this->addRule('receipt_year', ts('Selection required', array('domain' => 'org.cpt.cpttaxreceipts')), 'required');
 
+    $template_options = array();
+    $template_options[] = $this->createElement('radio', NULL, NULL, 'USA (tax-deductible receipts)', 'USA');
+    $template_options[] = $this->createElement('radio', NULL, NULL, 'Canada (contribution summaries)', 'Canada');
+    $this->addGroup($template_options, 'template', 'Summary Style');
+
     $this->add('checkbox', 'is_preview', ts('Run in preview mode?', array('domain' => 'org.cpt.cpttaxreceipts')));
 
     $buttons = array(
@@ -132,6 +137,8 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
       $previewMode = TRUE;
     }
 
+    $template = $params['template'] || 'USA';
+
     /**
      * Drupal module include
      */
@@ -151,7 +158,7 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
 
       if ( count($contributions) > 1 ) {
 
-        list( $ret, $method ) = cpttaxreceipts_issueAnnualTaxReceipt($contactId, $year, $receiptsForPrinting, $previewMode);
+        list( $ret, $method ) = cpttaxreceipts_issueAnnualTaxReceipt($contactId, $year, $receiptsForPrinting, $previewMode, $template);
 
         if ( $ret == 0 ) {
           $failCount++;

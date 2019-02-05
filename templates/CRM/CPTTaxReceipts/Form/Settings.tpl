@@ -83,6 +83,15 @@
 	      {else}<p class="label">Current {$form.receipt_pdftemplate.label}: {$receipt_pdftemplate}</p>{/if}
 	  {/if}</td>
       </tr>
+      <tr>
+        <td class="label">{$form.receipt_pdftemplate_canada.label}</td>
+        <td class="content">{$form.receipt_pdftemplate_canada.html}
+          <p class="description">{ts domain='org.cpt.cpttaxreceipts'}Upload your own PDF template for Canada: .pdf{/ts}</p>
+	  {if $receipt_pdftemplate_canada}
+	      {if $receipt_pdftemplate_canada_class}<span class="crm-error">The file {$receipt_pdftemplate_canada} was not found</span>
+	      {else}<p class="label">Current {$form.receipt_pdftemplate_canada.label}: {$receipt_pdftemplate_canada}</p>{/if}
+	  {/if}</td>
+      </tr>
     </tbody>
   </table>
 
