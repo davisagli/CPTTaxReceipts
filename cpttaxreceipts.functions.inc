@@ -521,7 +521,7 @@ function cpttaxreceipts_sendMethodForContact( $contactId ) {
 }
 
 
-function cpttaxreceipts_openCollectedPDF() {
+function cpttaxreceipts_openCollectedPDF($template = 'USA') {
 
   static $pdf;
 
@@ -530,6 +530,13 @@ function cpttaxreceipts_openCollectedPDF() {
     require_once 'tcpdf/tcpdf.php';
 
     $pdf = new PDF(PDF_PAGE_ORIENTATION, PDF_UNIT, 'LETTER', TRUE, 'UTF-8', FALSE);
+    if ($template == 'USA') {
+      $pdf->template = CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'receipt_pdftemplate');
+      $pdf->tax_deductible = true;
+    } elseif ( $template == 'Canada' ) {
+      $pdf->template = CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'receipt_pdftemplate_canada');
+      $pdf->tax_deductible = false;
+    }
     $pdf->Open();
 
     $pdf->SetAuthor(CRM_Core_BAO_Setting::getItem(CPTTAX_SETTINGS, 'org_name'));
