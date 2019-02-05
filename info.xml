@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <extension key="org.cpt.cpttaxreceipts" type="module">
   <file>cpttaxreceipts</file>
-  <name>CPT Tax Receipts</name>
+  <name>CPT Contribution Summaries</name>
   <description>
-      Creates annual PDF tax receipts including a table of contributions.
+      Creates annual PDF contribution summaries including a table of contributions.
   </description>
   <license>AGPL</license>
   <maintainer>

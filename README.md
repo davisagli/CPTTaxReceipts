@@ -1,14 +1,14 @@
 cpttaxreceipts
 ==============
 
-CPT Tax Receipts extension for CiviCRM
+CPT Contribution Summaries extension for CiviCRM
 
 This CiviCRM extension is based on the CDN Tax Receipts extension
 (https://github.com/jake-mw/CDNTaxReceipts) but with some significant
 changes:
 
 1. Only the annual tax receipt feature has been retained.
-1. Annual tax receipts can be generated multiple times;
+1. Annual contribution summaries can be generated multiple times;
    this extension does not keep track of which contributions have already
    been receipted.
 2. The generated receipts include a table of all contributions for the year.
@@ -32,14 +32,8 @@ Now you should be able to use the module.
 Operations
 ------------
 
-**Annual Tax Receipts**
+**Annual Contribution Summaries**
 
 These are receipts that collect all outstanding contributions for the year into one receipt.
 
-To issue Annual Tax Receipts, go to Search > Find Contacts (or Search > Advanced Search), run a search for contacts, select one or more contacts, and select "Issue Annual Tax Receipts" in the actions drop-down. Follow on-screen instructions from there.
-
-
-TODO:
-- install summary fields extension and tt Mark re which contacts to include
-- check with Mark re font
-- do we need something different for Canada/Intl?
+To issue Annual Contribution Summaries, go to Search > Find Contacts (or Search > Advanced Search), run a search for contacts, select one or more contacts, and select "Issue Annual Contribution Summaries" in the actions drop-down. Follow on-screen instructions from there.

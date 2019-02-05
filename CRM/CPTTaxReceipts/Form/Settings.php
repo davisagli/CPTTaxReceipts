@@ -13,7 +13,7 @@ class CRM_CPTTaxReceipts_Form_Settings extends CRM_Core_Form {
 
   function buildQuickForm() {
 
-    CRM_Utils_System::setTitle(ts('Configure CPT Tax Receipts', array('domain' => 'org.cpt.cpttaxreceipts')));
+    CRM_Utils_System::setTitle(ts('Configure CPT Contribution Summaries', array('domain' => 'org.cpt.cpttaxreceipts')));
 
     $this->processOrgOptions('build');
     $this->processReceiptOptions('build');

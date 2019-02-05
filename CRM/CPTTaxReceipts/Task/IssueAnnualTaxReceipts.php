@@ -58,7 +58,7 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
    */
   function buildQuickForm() {
 
-    CRM_Utils_System::setTitle(ts('Issue Annual Tax Receipts', array('domain' => 'org.cpt.cpttaxreceipts')));
+    CRM_Utils_System::setTitle(ts('Issue Annual Contribution Summaries', array('domain' => 'org.cpt.cpttaxreceipts')));
 
     CRM_Core_Resources::singleton()->addStyleFile('org.cpt.cpttaxreceipts', 'css/civicrm_cpttaxreceipts.css');
 
@@ -94,7 +94,7 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
       ),
       array(
         'type' => 'next',
-        'name' => 'Issue Tax Receipts',
+        'name' => 'Issue Contribution Summaries',
         'isDefault' => TRUE,
         'js' => array('onclick' => "return submitOnce(this,'{$this->_name}','" . ts('Processing', array('domain' => 'org.cpt.cpttaxreceipts')) . "');"),
       ),

@@ -22,7 +22,7 @@ function cpttaxreceipts_civicrm_searchTasks($objectType, &$tasks ) {
     }
     if (!$annual_in_list) {
       $tasks[] = array (
-        'title' => ts('Issue Annual Tax Receipts'),
+        'title' => ts('Issue Annual Contribution Summaries'),
         'class' => 'CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts',
         'result' => TRUE);
     }
@@ -33,9 +33,9 @@ function cpttaxreceipts_civicrm_searchTasks($objectType, &$tasks ) {
  * Implementation of hook_civicrm_permission().
  */
 function cpttaxreceipts_civicrm_permission( &$permissions ) {
-  $prefix = ts('CiviCRM CPT Tax Receipts') . ': ';
+  $prefix = ts('CiviCRM CPT Contribution Summaries') . ': ';
   $permissions = array(
-    'issue CPT Tax Receipts' => $prefix . ts('Issue Tax Receipts', array('domain' => 'org.cpt.cpttaxreceipts')),
+    'issue CPT Tax Receipts' => $prefix . ts('Issue Contribution Summaries', array('domain' => 'org.cpt.cpttaxreceipts')),
   );
 }
 
@@ -76,7 +76,7 @@ function cpttaxreceipts_civicrm_uninstall() {
  * Implementation of hook_civicrm_enable
  */
 function cpttaxreceipts_civicrm_enable() {
-  CRM_Core_Session::setStatus(ts('Configure the Tax Receipts extension at Administer >> CiviContribute >> CPT Tax Receipts.', array('domain' => 'org.cpt.cpttaxreceipts')));
+  CRM_Core_Session::setStatus(ts('Configure the Contribution Summaries extension at Administer >> CiviContribute >> CPT Contribution Summaries.', array('domain' => 'org.cpt.cpttaxreceipts')));
   return _cpttaxreceipts_civix_civicrm_enable();
 }
 
@@ -140,7 +140,7 @@ function cpttaxreceipts_civicrm_navigationMenu(&$params) {
         if ('CiviContribute' == $child_value['attributes']['name']) {
           $params[$parent_key]['child'][$child_key]['child'][$navId] = array (
             'attributes' => array (
-              'label' => ts('CPT Tax Receipts',array('domain' => 'org.cpt.cpttaxreceipts')),
+              'label' => ts('CPT Contribution Summaries',array('domain' => 'org.cpt.cpttaxreceipts')),
               'name' => 'CPT Tax Receipts',
               'url' => 'civicrm/cpttaxreceipts/settings?reset=1',
               'permission' => 'access CiviContribute,administer CiviCRM',
