@@ -104,7 +104,7 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
   }
 
   function setDefaultValues() {
-    return array('receipt_year' => 'issue_' . (date("Y") - 1),);
+    return array('receipt_year' => 'issue_' . (date("Y") - 1), 'template' => 'USA');
   }
 
   /**
@@ -137,7 +137,7 @@ class CRM_CPTTaxReceipts_Task_IssueAnnualTaxReceipts extends CRM_Contact_Form_Ta
       $previewMode = TRUE;
     }
 
-    $template = $params['template'] || 'USA';
+    $template = $params['template'] ? $params['template'] : 'USA';
 
     /**
      * Drupal module include

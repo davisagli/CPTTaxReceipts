@@ -46,7 +46,7 @@ require_once('FPDI/fpdi.php');
  *
  * This method is common to both single and annual receipts.
  */
-function cpttaxreceipts_processTaxReceipt( $receipt, &$collectedPdf = NULL, $previewMode = FALSE, $method = NULL, $template = 'USA' ) {
+function cpttaxreceipts_processTaxReceipt( $receipt, &$collectedPdf = NULL, $previewMode = FALSE, $template = 'USA' ) {
 
   // Get contact details
   list($displayname, $email) = CRM_Contact_BAO_Contact::getContactDetails($receipt['contact_id']);
